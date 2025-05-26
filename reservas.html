@@ -446,22 +446,69 @@
     </div>
 
     <script>
-        // URL base de la API (cambiar en producción)
-        const API_URL = 'https://tennismiligan.onrender.com';  // URL de producción en Render
-
+        // URL base de la API
+        const API_URL = 'https://tennismiligan.onrender.com';
+        const WS_URL = API_URL.replace('https://', 'wss://');
+        
         let reservasActuales = [];
-
-        // Variable para almacenar el intervalo de actualización
         let actualizacionInterval;
+        let ws;
 
         // Función para obtener la fecha actual (forzada a 20/05/2025 para pruebas)
         function obtenerFechaActual() {
             return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
         }
 
+        // Función para conectar WebSocket
+        function conectarWebSocket() {
+            try {
+                ws = new WebSocket(WS_URL);
+                
+                ws.onmessage = (event) => {
+                    console.log('Nueva actualización recibida');
+                    cargarReservas();
+                };
+
+                ws.onclose = () => {
+                    console.log('WebSocket desconectado. Reconectando...');
+                    setTimeout(conectarWebSocket, 5000);
+                };
+
+                ws.onerror = (error) => {
+                    console.error('Error en WebSocket:', error);
+                    // Si hay error en WebSocket, nos aseguramos de que al menos la actualización por polling funcione
+                    iniciarActualizacionPorPolling();
+                };
+            } catch (error) {
+                console.error('Error al conectar WebSocket:', error);
+                // Si falla la conexión WebSocket, usamos polling como respaldo
+                iniciarActualizacionPorPolling();
+            }
+        }
+
+        // Función para iniciar actualización por polling
+        function iniciarActualizacionPorPolling() {
+            if (!actualizacionInterval) {
+                actualizacionInterval = setInterval(() => {
+                    cargarReservas();
+                }, 5000); // Actualizar cada 5 segundos
+            }
+        }
+
+        // Función para detener todas las actualizaciones
+        function detenerActualizaciones() {
+            if (actualizacionInterval) {
+                clearInterval(actualizacionInterval);
+                actualizacionInterval = null;
+            }
+            if (ws) {
+                ws.close();
+            }
+        }
+
         // Función para cerrar sesión
         function cerrarSesion() {
-            detenerActualizacionAutomatica();
+            detenerActualizaciones();
             localStorage.removeItem('token');
             window.location.href = 'login.html';
         }
@@ -609,41 +656,6 @@
             `;
         }
 
-        // Función para iniciar la actualización automática
-        function iniciarActualizacionAutomatica() {
-            // Actualizar inmediatamente
-            cargarReservas();
-            
-            // Configurar actualización cada 30 segundos
-            actualizacionInterval = setInterval(() => {
-                cargarReservas();
-            }, 30000); // 30 segundos
-        }
-
-        // Función para detener la actualización automática
-        function detenerActualizacionAutomatica() {
-            if (actualizacionInterval) {
-                clearInterval(actualizacionInterval);
-            }
-        }
-
-        // Modificar la función cargarReservas para manejar errores de red
-        async function cargarReservas() {
-            try {
-                const response = await fetchAuth(`${API_URL}/admin/reservas`);
-                if (!response.ok) {
-                    throw new Error('Error al cargar las reservas');
-                }
-                const reservas = await response.json();
-                reservasActuales = reservas;
-                actualizarTablaReservas();
-            } catch (error) {
-                console.error('Error:', error);
-                mostrarMensaje('Error al cargar las reservas. Reintentando...', false);
-                // No detenemos la actualización automática para que siga intentando
-            }
-        }
-
         // Función para mostrar el modal de confirmación
         function mostrarModalConfirmacion(reservaId) {
             const modal = document.getElementById('modal-confirmacion');
@@ -660,18 +672,49 @@
             document.getElementById('modal-confirmacion').style.display = 'none';
         }
 
+        // Modificar la función cargarReservas para ser más robusta
+        async function cargarReservas() {
+            try {
+                const response = await fetchAuth(`${API_URL}/admin/reservas`);
+                if (!response.ok) {
+                    throw new Error('Error al cargar las reservas');
+                }
+                const reservas = await response.json();
+                
+                // Comparar si hay cambios antes de actualizar
+                if (JSON.stringify(reservas) !== JSON.stringify(reservasActuales)) {
+                    console.log('Nuevas reservas detectadas, actualizando vista...');
+                    reservasActuales = reservas;
+                    actualizarTablaReservas();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarMensaje('Error al cargar las reservas. Reintentando...', false);
+            }
+        }
+
         // Modificar el event listener del DOMContentLoaded
         document.addEventListener('DOMContentLoaded', () => {
             verificarAuth();
-            iniciarActualizacionAutomatica();
+            
+            // Cargar reservas inmediatamente
+            cargarReservas();
+            
+            // Intentar conectar WebSocket primero
+            conectarWebSocket();
+            
+            // Iniciar polling como respaldo
+            iniciarActualizacionPorPolling();
         });
 
-        // Agregar event listener para cuando la página se oculta o se muestra
+        // Modificar el event listener de visibilitychange
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                detenerActualizacionAutomatica();
+                detenerActualizaciones();
             } else {
-                iniciarActualizacionAutomatica();
+                cargarReservas(); // Actualizar inmediatamente al volver
+                conectarWebSocket();
+                iniciarActualizacionPorPolling();
             }
         });
     </script>
