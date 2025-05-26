@@ -204,6 +204,65 @@
                 justify-content: center;
             }
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .estado-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .estado-activo {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .estado-cancelado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .acciones-container {
+            display: flex;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -241,20 +300,32 @@
             <table class="reservas-table">
                 <thead>
                     <tr>
+                        <th>Cliente</th>
+                        <th>Teléfono</th>
                         <th>Fecha</th>
                         <th>Hora</th>
                         <th>Cancha</th>
-                        <th>Cliente</th>
+                        <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-reservas">
-                    <!-- Se llenará dinámicamente -->
+                    <!-- El contenido se cargará dinámicamente -->
                 </tbody>
             </table>
-
-            <div id="empty-state" class="empty-state" style="display: none;">
-                <p>No hay reservas que coincidan con los filtros seleccionados.</p>
+            
+            <div id="mensaje" class="mensaje" style="display: none;"></div>
+        </div>
+        
+        <!-- Modal de Confirmación -->
+        <div id="modal-confirmacion" class="modal">
+            <div class="modal-content">
+                <h3>Confirmar Cancelación</h3>
+                <p>¿Estás seguro de que deseas cancelar esta reserva?</p>
+                <div class="modal-actions">
+                    <button id="btn-confirmar" class="btn btn-danger">Confirmar</button>
+                    <button onclick="cerrarModal()" class="btn btn-secondary">Cancelar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -267,7 +338,7 @@
 
         // Función para obtener la fecha actual (forzada a 20/05/2025 para pruebas)
         function obtenerFechaActual() {
-            return '2025-05-20';
+            return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
         }
 
         // Función para cerrar sesión
@@ -311,26 +382,26 @@
         }
 
         function formatearFecha(fecha) {
-            const opciones = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                timeZone: 'UTC'
+            const opciones = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                weekday: 'long',
+                timeZone: 'America/Lima'
             };
-            const fechaObj = new Date(fecha + 'T00:00:00Z');
+            const fechaObj = new Date(fecha);
             return fechaObj.toLocaleDateString('es-ES', opciones);
         }
 
-        function mostrarMensaje(texto, esExito) {
-            const mensaje = document.createElement('div');
+        function mostrarMensaje(texto, esExito = true) {
+            const mensaje = document.getElementById('mensaje');
             mensaje.textContent = texto;
             mensaje.className = `mensaje ${esExito ? 'exito' : 'error'}`;
-            document.querySelector('.main-card').insertBefore(
-                mensaje,
-                document.querySelector('.filters')
-            );
-            setTimeout(() => mensaje.remove(), 3000);
+            mensaje.style.display = 'block';
+            
+            setTimeout(() => {
+                mensaje.style.display = 'none';
+            }, 3000);
         }
 
         function eliminarReserva(id) {
@@ -380,12 +451,14 @@
             emptyState.style.display = 'none';
             tabla.innerHTML = reservasFiltradas.map(reserva => `
                 <tr>
+                    <td>${reserva.nombre}</td>
+                    <td>${reserva.telefono}</td>
                     <td>${formatearFecha(reserva.fecha)}</td>
                     <td>${reserva.horario}</td>
                     <td>${reserva.cancha}</td>
-                    <td>${reserva.nombre}</td>
+                    <td class="estado-${reserva.estado.toLowerCase()} estado-badge">${reserva.estado}</td>
                     <td>
-                        <button onclick="eliminarReserva(${reserva.id})" class="btn btn-danger">
+                        <button onclick="mostrarModalConfirmacion(${reserva.id})" class="btn btn-danger">
                             Eliminar
                         </button>
                     </td>
@@ -405,6 +478,22 @@
                     console.error('Error:', error);
                     mostrarMensaje('Error al cargar las reservas', false);
                 });
+        }
+
+        // Función para mostrar el modal de confirmación
+        function mostrarModalConfirmacion(reservaId) {
+            const modal = document.getElementById('modal-confirmacion');
+            modal.style.display = 'flex';
+            
+            document.getElementById('btn-confirmar').onclick = async () => {
+                await eliminarReserva(reservaId);
+                cerrarModal();
+            };
+        }
+
+        // Función para cerrar el modal
+        function cerrarModal() {
+            document.getElementById('modal-confirmacion').style.display = 'none';
         }
 
         // Inicializar al cargar la página
