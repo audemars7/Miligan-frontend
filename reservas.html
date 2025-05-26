@@ -582,6 +582,7 @@
         const API_URL = 'https://tennismiligan.onrender.com';
         let reservasActuales = [];
         let actualizacionInterval;
+        let reservaAEliminar = null;
 
         // Función para verificar autenticación
         function verificarAuth() {
@@ -604,13 +605,18 @@
                 ...options.headers
             };
 
-            const response = await fetch(url, { ...options, headers });
-            if (response.status === 401) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
-                return null;
+            try {
+                const response = await fetch(url, { ...options, headers });
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'login.html';
+                    return null;
+                }
+                return response;
+            } catch (error) {
+                console.error('Error en fetchAuth:', error);
+                throw error;
             }
-            return response;
         }
 
         // Función para actualizar la tabla de reservas
@@ -628,45 +634,37 @@
             horarios.forEach(horario => {
                 const tr = document.createElement('tr');
                 
+                // Celda de hora
                 const tdHora = document.createElement('td');
                 tdHora.textContent = horario;
                 tr.appendChild(tdHora);
 
-                // Cancha 1
-                const tdCancha1 = document.createElement('td');
-                const reservaCancha1 = reservasActuales.find(r => 
-                    r.horario === horario && (r.cancha === "1" || r.cancha === "Cancha 1"));
-                if (reservaCancha1) {
-                    tdCancha1.innerHTML = `
-                        <div class="reservado">
-                            Reservado - ${reservaCancha1.nombre}
-                            <div class="reserva-acciones">
-                                <button onclick="editarReserva('${reservaCancha1._id}')" class="btn-editar">Editar</button>
-                                <button onclick="confirmarEliminar('${reservaCancha1._id}')" class="btn-eliminar">Eliminar</button>
-                            </div>
-                        </div>`;
-                } else {
-                    tdCancha1.innerHTML = '<div class="disponible">Disponible</div>';
-                }
-                tr.appendChild(tdCancha1);
+                // Función para crear celda de cancha
+                const crearCeldaCancha = (numeroCancha) => {
+                    const td = document.createElement('td');
+                    const reserva = reservasActuales.find(r => 
+                        r.horario === horario && 
+                        (r.cancha === numeroCancha.toString() || r.cancha === `Cancha ${numeroCancha}`)
+                    );
 
-                // Cancha 2
-                const tdCancha2 = document.createElement('td');
-                const reservaCancha2 = reservasActuales.find(r => 
-                    r.horario === horario && (r.cancha === "2" || r.cancha === "Cancha 2"));
-                if (reservaCancha2) {
-                    tdCancha2.innerHTML = `
-                        <div class="reservado">
-                            Reservado - ${reservaCancha2.nombre}
-                            <div class="reserva-acciones">
-                                <button onclick="editarReserva('${reservaCancha2._id}')" class="btn-editar">Editar</button>
-                                <button onclick="confirmarEliminar('${reservaCancha2._id}')" class="btn-eliminar">Eliminar</button>
-                            </div>
-                        </div>`;
-                } else {
-                    tdCancha2.innerHTML = '<div class="disponible">Disponible</div>';
-                }
-                tr.appendChild(tdCancha2);
+                    if (reserva) {
+                        td.innerHTML = `
+                            <div class="reserva-celda">
+                                <div class="reserva-nombre">${reserva.nombre}</div>
+                                <div class="reserva-acciones">
+                                    <button onclick="editarReserva('${reserva._id}')" class="btn-editar">Editar</button>
+                                    <button onclick="confirmarEliminar('${reserva._id}')" class="btn-eliminar">Eliminar</button>
+                                </div>
+                            </div>`;
+                    } else {
+                        td.innerHTML = '<div class="celda-disponible">Disponible</div>';
+                    }
+                    return td;
+                };
+
+                // Agregar celdas para cada cancha
+                tr.appendChild(crearCeldaCancha(1));
+                tr.appendChild(crearCeldaCancha(2));
 
                 tbody.appendChild(tr);
             });
@@ -674,12 +672,18 @@
 
         // Función para mostrar modal
         function mostrarModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'flex';
+            }
         }
 
         // Función para cerrar modal
         function cerrarModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
         }
 
         // Función para editar reserva
@@ -692,14 +696,6 @@
             }
         }
 
-        let reservaAEliminar = null;
-
-        // Función para mostrar confirmación de eliminación
-        function confirmarEliminar(id) {
-            reservaAEliminar = id;
-            mostrarModal('modal-confirmacion');
-        }
-
         // Función para guardar edición
         async function guardarEdicion(event) {
             event.preventDefault();
@@ -709,24 +705,26 @@
             try {
                 const response = await fetchAuth(`${API_URL}/admin/reservas/${id}`, {
                     method: 'PUT',
-                    body: JSON.stringify({ nombre }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    body: JSON.stringify({ nombre })
                 });
 
                 if (!response.ok) {
                     throw new Error('Error al actualizar la reserva');
                 }
 
-                await response.json();
                 mostrarMensaje('Reserva actualizada con éxito', true);
                 cerrarModal('modal-edicion');
-                cargarReservasConRetry();
+                await cargarReservasConRetry();
             } catch (error) {
                 console.error('Error:', error);
                 mostrarMensaje('Error al actualizar la reserva', false);
             }
+        }
+
+        // Función para confirmar eliminación
+        function confirmarEliminar(id) {
+            reservaAEliminar = id;
+            mostrarModal('modal-confirmacion');
         }
 
         // Función para eliminar reserva
@@ -742,10 +740,9 @@
                     throw new Error('Error al eliminar la reserva');
                 }
 
-                await response.json();
                 mostrarMensaje('Reserva eliminada con éxito', true);
                 cerrarModal('modal-confirmacion');
-                cargarReservasConRetry();
+                await cargarReservasConRetry();
             } catch (error) {
                 console.error('Error:', error);
                 mostrarMensaje('Error al eliminar la reserva', false);
@@ -780,18 +777,16 @@
                     const reservas = await response.json();
                     console.log('Reservas recibidas:', reservas);
                     
-                    // Actualizar siempre, sin comparación
                     reservasActuales = reservas;
                     actualizarTablaReservas();
                     
-                    return true; // Éxito
+                    return true;
                 } catch (error) {
                     console.error(`Error en intento ${intento}:`, error);
                     if (intento === intentos) {
                         mostrarMensaje('Error al cargar las reservas. Por favor, recarga la página.', false);
                         return false;
                     }
-                    // Esperar antes del siguiente intento
                     await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
@@ -799,13 +794,9 @@
 
         // Función para iniciar actualizaciones
         function iniciarActualizaciones() {
-            // Detener actualizaciones existentes si las hay
             detenerActualizaciones();
-            
-            // Cargar inmediatamente
             cargarReservasConRetry();
             
-            // Configurar intervalo de actualización cada 2 segundos
             actualizacionInterval = setInterval(() => {
                 cargarReservasConRetry();
             }, 2000);
@@ -825,7 +816,16 @@
             iniciarActualizaciones();
 
             // Configurar el botón de confirmar eliminación
-            document.getElementById('btn-confirmar-eliminar').addEventListener('click', eliminarReserva);
+            const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar');
+            if (btnConfirmarEliminar) {
+                btnConfirmarEliminar.addEventListener('click', eliminarReserva);
+            }
+
+            // Configurar el formulario de edición
+            const formEdicion = document.getElementById('form-edicion');
+            if (formEdicion) {
+                formEdicion.addEventListener('submit', guardarEdicion);
+            }
         });
 
         // Manejar visibilidad de la página
