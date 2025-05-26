@@ -451,6 +451,9 @@
 
         let reservasActuales = [];
 
+        // Variable para almacenar el intervalo de actualización
+        let actualizacionInterval;
+
         // Función para obtener la fecha actual (forzada a 20/05/2025 para pruebas)
         function obtenerFechaActual() {
             return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
@@ -458,6 +461,7 @@
 
         // Función para cerrar sesión
         function cerrarSesion() {
+            detenerActualizacionAutomatica();
             localStorage.removeItem('token');
             window.location.href = 'login.html';
         }
@@ -605,18 +609,39 @@
             `;
         }
 
-        // Cargar todas las reservas
-        function cargarReservas() {
-            fetchAuth(`${API_URL}/admin/reservas`)
-                .then(response => response.json())
-                .then(reservas => {
-                    reservasActuales = reservas;
-                    actualizarTablaReservas();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    mostrarMensaje('Error al cargar las reservas', false);
-                });
+        // Función para iniciar la actualización automática
+        function iniciarActualizacionAutomatica() {
+            // Actualizar inmediatamente
+            cargarReservas();
+            
+            // Configurar actualización cada 30 segundos
+            actualizacionInterval = setInterval(() => {
+                cargarReservas();
+            }, 30000); // 30 segundos
+        }
+
+        // Función para detener la actualización automática
+        function detenerActualizacionAutomatica() {
+            if (actualizacionInterval) {
+                clearInterval(actualizacionInterval);
+            }
+        }
+
+        // Modificar la función cargarReservas para manejar errores de red
+        async function cargarReservas() {
+            try {
+                const response = await fetchAuth(`${API_URL}/admin/reservas`);
+                if (!response.ok) {
+                    throw new Error('Error al cargar las reservas');
+                }
+                const reservas = await response.json();
+                reservasActuales = reservas;
+                actualizarTablaReservas();
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarMensaje('Error al cargar las reservas. Reintentando...', false);
+                // No detenemos la actualización automática para que siga intentando
+            }
         }
 
         // Función para mostrar el modal de confirmación
@@ -635,10 +660,19 @@
             document.getElementById('modal-confirmacion').style.display = 'none';
         }
 
-        // Inicializar al cargar la página
+        // Modificar el event listener del DOMContentLoaded
         document.addEventListener('DOMContentLoaded', () => {
             verificarAuth();
-            cargarReservas();
+            iniciarActualizacionAutomatica();
+        });
+
+        // Agregar event listener para cuando la página se oculta o se muestra
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                detenerActualizacionAutomatica();
+            } else {
+                iniciarActualizacionAutomatica();
+            }
         });
     </script>
 </body>
