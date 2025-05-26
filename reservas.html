@@ -448,61 +448,71 @@
     <script>
         // URL base de la API
         const API_URL = 'https://tennismiligan.onrender.com';
-        const WS_URL = API_URL.replace('https://', 'wss://');
         
         let reservasActuales = [];
         let actualizacionInterval;
-        let ws;
+        let ultimaActualizacion = 0;
 
-        // Función para obtener la fecha actual (forzada a 20/05/2025 para pruebas)
-        function obtenerFechaActual() {
-            return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
+        // Función para verificar si necesitamos forzar una actualización
+        function necesitaActualizacionForzada() {
+            const ahora = Date.now();
+            return (ahora - ultimaActualizacion) > 2000; // Forzar si han pasado más de 2 segundos
         }
 
-        // Función para conectar WebSocket
-        function conectarWebSocket() {
-            try {
-                ws = new WebSocket(WS_URL);
-                
-                ws.onmessage = (event) => {
-                    console.log('Nueva actualización recibida');
-                    cargarReservas();
-                };
+        // Función para cargar reservas con retry
+        async function cargarReservasConRetry(intentos = 3) {
+            for (let intento = 1; intento <= intentos; intento++) {
+                try {
+                    console.log(`Intentando cargar reservas (intento ${intento}/${intentos})`);
+                    const response = await fetchAuth(`${API_URL}/admin/reservas`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
 
-                ws.onclose = () => {
-                    console.log('WebSocket desconectado. Reconectando...');
-                    setTimeout(conectarWebSocket, 5000);
-                };
-
-                ws.onerror = (error) => {
-                    console.error('Error en WebSocket:', error);
-                    // Si hay error en WebSocket, nos aseguramos de que al menos la actualización por polling funcione
-                    iniciarActualizacionPorPolling();
-                };
-            } catch (error) {
-                console.error('Error al conectar WebSocket:', error);
-                // Si falla la conexión WebSocket, usamos polling como respaldo
-                iniciarActualizacionPorPolling();
+                    const reservas = await response.json();
+                    console.log('Reservas recibidas:', reservas);
+                    
+                    // Siempre actualizar si es forzado o si hay cambios
+                    if (necesitaActualizacionForzada() || JSON.stringify(reservas) !== JSON.stringify(reservasActuales)) {
+                        console.log('Actualizando vista con nuevas reservas');
+                        reservasActuales = reservas;
+                        actualizarTablaReservas();
+                        ultimaActualizacion = Date.now();
+                    }
+                    
+                    return true; // Éxito
+                } catch (error) {
+                    console.error(`Error en intento ${intento}:`, error);
+                    if (intento === intentos) {
+                        mostrarMensaje('Error al cargar las reservas. Por favor, recarga la página.', false);
+                        return false;
+                    }
+                    // Esperar antes del siguiente intento
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
             }
         }
 
-        // Función para iniciar actualización por polling
-        function iniciarActualizacionPorPolling() {
-            if (!actualizacionInterval) {
-                actualizacionInterval = setInterval(() => {
-                    cargarReservas();
-                }, 5000); // Actualizar cada 5 segundos
-            }
+        // Función para iniciar actualizaciones
+        function iniciarActualizaciones() {
+            // Detener actualizaciones existentes si las hay
+            detenerActualizaciones();
+            
+            // Cargar inmediatamente
+            cargarReservasConRetry();
+            
+            // Configurar intervalo de actualización
+            actualizacionInterval = setInterval(() => {
+                cargarReservasConRetry();
+            }, 3000); // Actualizar cada 3 segundos
         }
 
-        // Función para detener todas las actualizaciones
+        // Función para detener actualizaciones
         function detenerActualizaciones() {
             if (actualizacionInterval) {
                 clearInterval(actualizacionInterval);
                 actualizacionInterval = null;
-            }
-            if (ws) {
-                ws.close();
             }
         }
 
@@ -535,14 +545,14 @@
             try {
                 const response = await fetch(url, { ...options, headers });
                 if (response.status === 401) {
-                    // Token inválido o expirado
+                    console.log('Token inválido o expirado');
                     localStorage.removeItem('token');
                     window.location.href = 'login.html';
                     return;
                 }
                 return response;
             } catch (error) {
-                console.error('Error en la petición:', error);
+                console.error('Error en fetchAuth:', error);
                 throw error;
             }
         }
@@ -583,7 +593,7 @@
                 })
                 .then(data => {
                     mostrarMensaje(data.mensaje || 'Reserva eliminada con éxito', true);
-                    cargarReservas();
+                    cargarReservasConRetry();
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -672,49 +682,20 @@
             document.getElementById('modal-confirmacion').style.display = 'none';
         }
 
-        // Modificar la función cargarReservas para ser más robusta
-        async function cargarReservas() {
-            try {
-                const response = await fetchAuth(`${API_URL}/admin/reservas`);
-                if (!response.ok) {
-                    throw new Error('Error al cargar las reservas');
-                }
-                const reservas = await response.json();
-                
-                // Comparar si hay cambios antes de actualizar
-                if (JSON.stringify(reservas) !== JSON.stringify(reservasActuales)) {
-                    console.log('Nuevas reservas detectadas, actualizando vista...');
-                    reservasActuales = reservas;
-                    actualizarTablaReservas();
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                mostrarMensaje('Error al cargar las reservas. Reintentando...', false);
-            }
-        }
-
-        // Modificar el event listener del DOMContentLoaded
+        // Event listeners
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('Página cargada, iniciando sistema de reservas');
             verificarAuth();
-            
-            // Cargar reservas inmediatamente
-            cargarReservas();
-            
-            // Intentar conectar WebSocket primero
-            conectarWebSocket();
-            
-            // Iniciar polling como respaldo
-            iniciarActualizacionPorPolling();
+            iniciarActualizaciones();
         });
 
-        // Modificar el event listener de visibilitychange
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
+                console.log('Página oculta, deteniendo actualizaciones');
                 detenerActualizaciones();
             } else {
-                cargarReservas(); // Actualizar inmediatamente al volver
-                conectarWebSocket();
-                iniciarActualizacionPorPolling();
+                console.log('Página visible, reiniciando actualizaciones');
+                iniciarActualizaciones();
             }
         });
     </script>
