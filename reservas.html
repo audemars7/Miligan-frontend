@@ -712,7 +712,8 @@
                     throw new Error('Error al actualizar la reserva');
                 }
 
-                mostrarMensaje('Reserva actualizada con éxito', true);
+                const data = await response.json();
+                mostrarMensaje(data.mensaje, true);
                 cerrarModal('modal-edicion');
                 await cargarReservasConRetry();
             } catch (error) {
@@ -740,7 +741,8 @@
                     throw new Error('Error al eliminar la reserva');
                 }
 
-                mostrarMensaje('Reserva eliminada con éxito', true);
+                const data = await response.json();
+                mostrarMensaje(data.mensaje, true);
                 cerrarModal('modal-confirmacion');
                 await cargarReservasConRetry();
             } catch (error) {
