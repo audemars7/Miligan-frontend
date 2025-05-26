@@ -446,17 +446,81 @@
     </div>
 
     <script>
-        // URL base de la API
         const API_URL = 'https://tennismiligan.onrender.com';
-        
         let reservasActuales = [];
         let actualizacionInterval;
-        let ultimaActualizacion = 0;
 
-        // Función para verificar si necesitamos forzar una actualización
-        function necesitaActualizacionForzada() {
-            const ahora = Date.now();
-            return (ahora - ultimaActualizacion) > 2000; // Forzar si han pasado más de 2 segundos
+        // Función para verificar autenticación
+        function verificarAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            return token;
+        }
+
+        // Función para hacer peticiones autenticadas
+        async function fetchAuth(url, options = {}) {
+            const token = verificarAuth();
+            if (!token) return null;
+
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+
+            const response = await fetch(url, { ...options, headers });
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return null;
+            }
+            return response;
+        }
+
+        // Función para actualizar la tabla de reservas
+        function actualizarTablaReservas() {
+            const tbody = document.getElementById('tabla-horarios');
+            tbody.innerHTML = '';
+
+            // Definir horarios
+            const horarios = [
+                "06:00 - 07:00", "07:00 - 08:00", "08:00 - 09:00", "09:00 - 10:00",
+                "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00", "13:00 - 14:00",
+                "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00", "17:00 - 18:00",
+                "18:00 - 19:00", "19:00 - 20:00", "20:00 - 21:00", "21:00 - 22:00"
+            ];
+
+            horarios.forEach(horario => {
+                const tr = document.createElement('tr');
+                
+                // Columna de hora
+                const tdHora = document.createElement('td');
+                tdHora.textContent = horario;
+                tr.appendChild(tdHora);
+
+                // Cancha 1
+                const tdCancha1 = document.createElement('td');
+                const reservaCancha1 = reservasActuales.find(r => 
+                    r.horario === horario && r.cancha === "1");
+                tdCancha1.innerHTML = reservaCancha1 ? 
+                    `<div class="reservado">Reservado - ${reservaCancha1.nombre}</div>` : 
+                    '<div class="disponible">Disponible</div>';
+                tr.appendChild(tdCancha1);
+
+                // Cancha 2
+                const tdCancha2 = document.createElement('td');
+                const reservaCancha2 = reservasActuales.find(r => 
+                    r.horario === horario && r.cancha === "2");
+                tdCancha2.innerHTML = reservaCancha2 ? 
+                    `<div class="reservado">Reservado - ${reservaCancha2.nombre}</div>` : 
+                    '<div class="disponible">Disponible</div>';
+                tr.appendChild(tdCancha2);
+
+                tbody.appendChild(tr);
+            });
         }
 
         // Función para cargar reservas con retry
@@ -473,13 +537,9 @@
                     const reservas = await response.json();
                     console.log('Reservas recibidas:', reservas);
                     
-                    // Siempre actualizar si es forzado o si hay cambios
-                    if (necesitaActualizacionForzada() || JSON.stringify(reservas) !== JSON.stringify(reservasActuales)) {
-                        console.log('Actualizando vista con nuevas reservas');
-                        reservasActuales = reservas;
-                        actualizarTablaReservas();
-                        ultimaActualizacion = Date.now();
-                    }
+                    // Actualizar siempre, sin comparación
+                    reservasActuales = reservas;
+                    actualizarTablaReservas();
                     
                     return true; // Éxito
                 } catch (error) {
@@ -502,10 +562,10 @@
             // Cargar inmediatamente
             cargarReservasConRetry();
             
-            // Configurar intervalo de actualización
+            // Configurar intervalo de actualización cada 2 segundos
             actualizacionInterval = setInterval(() => {
                 cargarReservasConRetry();
-            }, 3000); // Actualizar cada 3 segundos
+            }, 2000);
         }
 
         // Función para detener actualizaciones
@@ -516,179 +576,13 @@
             }
         }
 
-        // Función para cerrar sesión
-        function cerrarSesion() {
-            detenerActualizaciones();
-            localStorage.removeItem('token');
-            window.location.href = 'login.html';
-        }
-
-        // Verificar autenticación
-        function verificarAuth() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = 'login.html';
-                return;
-            }
-            return token;
-        }
-
-        // Función para hacer peticiones autenticadas
-        async function fetchAuth(url, options = {}) {
-            const token = verificarAuth();
-            const headers = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                ...options.headers
-            };
-
-            try {
-                const response = await fetch(url, { ...options, headers });
-                if (response.status === 401) {
-                    console.log('Token inválido o expirado');
-                    localStorage.removeItem('token');
-                    window.location.href = 'login.html';
-                    return;
-                }
-                return response;
-            } catch (error) {
-                console.error('Error en fetchAuth:', error);
-                throw error;
-            }
-        }
-
-        function formatearFecha(fecha) {
-            const opciones = {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                weekday: 'long',
-                timeZone: 'America/Lima'
-            };
-            const fechaObj = new Date(fecha);
-            return fechaObj.toLocaleDateString('es-ES', opciones);
-        }
-
-        function mostrarMensaje(texto, esExito = true) {
-            const mensaje = document.getElementById('mensaje');
-            mensaje.textContent = texto;
-            mensaje.className = `mensaje ${esExito ? 'exito' : 'error'}`;
-            mensaje.style.display = 'block';
-            
-            setTimeout(() => {
-                mensaje.style.display = 'none';
-            }, 3000);
-        }
-
-        function eliminarReserva(id) {
-            if (confirm('¿Estás seguro de que deseas eliminar esta reserva?')) {
-                fetchAuth(`${API_URL}/reservas/${id}`, {
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(data => Promise.reject(data));
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    mostrarMensaje(data.mensaje || 'Reserva eliminada con éxito', true);
-                    cargarReservasConRetry();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    mostrarMensaje(error.mensaje || 'Error al eliminar la reserva', false);
-                });
-            }
-        }
-
-        function actualizarTablaReservas() {
-            try {
-                const tbody = document.getElementById('tabla-horarios');
-                tbody.innerHTML = '';
-
-                // Definir horarios
-                const horarios = [
-                    "06:00 - 07:00", "07:00 - 08:00", "08:00 - 09:00", "09:00 - 10:00",
-                    "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00", "13:00 - 14:00",
-                    "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00", "17:00 - 18:00",
-                    "18:00 - 19:00", "19:00 - 20:00", "20:00 - 21:00", "21:00 - 22:00"
-                ];
-
-                horarios.forEach(horario => {
-                    const tr = document.createElement('tr');
-                    const tdHora = document.createElement('td');
-                    tdHora.textContent = horario;
-                    tr.appendChild(tdHora);
-
-                    // Cancha 1
-                    const tdCancha1 = document.createElement('td');
-                    const reservaCancha1 = reservasActuales.find(r => 
-                        r.horario === horario && r.cancha === "1");
-                    
-                    if (reservaCancha1) {
-                        tdCancha1.innerHTML = crearCeldaReserva(reservaCancha1);
-                    } else {
-                        tdCancha1.innerHTML = '<div class="celda-disponible">Disponible</div>';
-                    }
-                    tr.appendChild(tdCancha1);
-
-                    // Cancha 2
-                    const tdCancha2 = document.createElement('td');
-                    const reservaCancha2 = reservasActuales.find(r => 
-                        r.horario === horario && r.cancha === "2");
-                    
-                    if (reservaCancha2) {
-                        tdCancha2.innerHTML = crearCeldaReserva(reservaCancha2);
-                    } else {
-                        tdCancha2.innerHTML = '<div class="celda-disponible">Disponible</div>';
-                    }
-                    tr.appendChild(tdCancha2);
-
-                    tbody.appendChild(tr);
-                });
-            } catch (error) {
-                console.error('Error al actualizar tabla:', error);
-                mostrarMensaje('Error al actualizar la tabla de horarios', false);
-            }
-        }
-
-        function crearCeldaReserva(reserva) {
-            return `
-                <div class="reserva-celda">
-                    <div class="reserva-nombre">${reserva.nombre}</div>
-                    <div class="reserva-tipo">${reserva.tipo || 'Singles(Tenis)'}</div>
-                    ${reserva.invitado ? `<div class="reserva-tipo">Inv: ${reserva.invitado}</div>` : ''}
-                    <button onclick="mostrarModalConfirmacion('${reserva._id}')" class="btn-cancelar">
-                        Cancelar
-                    </button>
-                </div>
-            `;
-        }
-
-        // Función para mostrar el modal de confirmación
-        function mostrarModalConfirmacion(reservaId) {
-            const modal = document.getElementById('modal-confirmacion');
-            modal.style.display = 'flex';
-            
-            document.getElementById('btn-confirmar').onclick = async () => {
-                await eliminarReserva(reservaId);
-                cerrarModal();
-            };
-        }
-
-        // Función para cerrar el modal
-        function cerrarModal() {
-            document.getElementById('modal-confirmacion').style.display = 'none';
-        }
-
-        // Event listeners
+        // Event Listeners
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('Página cargada, iniciando sistema de reservas');
-            verificarAuth();
+            console.log('Iniciando sistema de reservas...');
             iniciarActualizaciones();
         });
 
+        // Manejar visibilidad de la página
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 console.log('Página oculta, deteniendo actualizaciones');
@@ -698,6 +592,12 @@
                 iniciarActualizaciones();
             }
         });
+
+        function cerrarSesion() {
+            detenerActualizaciones();
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
     </script>
 </body>
 </html>
