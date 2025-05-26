@@ -485,7 +485,6 @@
             const tbody = document.getElementById('tabla-horarios');
             tbody.innerHTML = '';
 
-            // Definir horarios
             const horarios = [
                 "06:00 - 07:00", "07:00 - 08:00", "08:00 - 09:00", "09:00 - 10:00",
                 "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00", "13:00 - 14:00",
@@ -504,7 +503,7 @@
                 // Cancha 1
                 const tdCancha1 = document.createElement('td');
                 const reservaCancha1 = reservasActuales.find(r => 
-                    r.horario === horario && r.cancha === "1");
+                    r.horario === horario && (r.cancha === "1" || r.cancha === "Cancha 1"));
                 tdCancha1.innerHTML = reservaCancha1 ? 
                     `<div class="reservado">Reservado - ${reservaCancha1.nombre}</div>` : 
                     '<div class="disponible">Disponible</div>';
@@ -513,7 +512,7 @@
                 // Cancha 2
                 const tdCancha2 = document.createElement('td');
                 const reservaCancha2 = reservasActuales.find(r => 
-                    r.horario === horario && r.cancha === "2");
+                    r.horario === horario && (r.cancha === "2" || r.cancha === "Cancha 2"));
                 tdCancha2.innerHTML = reservaCancha2 ? 
                     `<div class="reservado">Reservado - ${reservaCancha2.nombre}</div>` : 
                     '<div class="disponible">Disponible</div>';
