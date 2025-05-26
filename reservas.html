@@ -321,6 +321,80 @@
             display: flex;
             gap: 8px;
         }
+
+        .horario-grid {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .horario-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: var(--border-radius);
+        }
+
+        .horario-table th {
+            background: var(--primary-green);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            min-width: 200px;
+        }
+
+        .horario-table th:first-child {
+            min-width: 120px;
+        }
+
+        .horario-table td {
+            padding: 15px;
+            border: 1px solid #eee;
+            text-align: center;
+            height: 80px;
+            vertical-align: middle;
+        }
+
+        .horario-table tr:nth-child(even) td {
+            background-color: #f8f9fa;
+        }
+
+        .reserva-celda {
+            padding: 8px;
+            border-radius: 6px;
+            background-color: #e8f5e9;
+            border: 1px solid #2E7D32;
+            margin: 4px;
+            font-size: 0.9em;
+        }
+
+        .reserva-nombre {
+            font-weight: 600;
+            color: #1b5e20;
+            margin-bottom: 4px;
+        }
+
+        .celda-disponible {
+            color: #2E7D32;
+            font-weight: 500;
+        }
+
+        .btn-cancelar {
+            margin-top: 8px;
+            padding: 4px 8px;
+            font-size: 0.8em;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-cancelar:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -340,37 +414,20 @@
                 </div>
             </div>
 
-            <div class="filters">
-                <div class="filter-group">
-                    <label for="fecha-filtro">Filtrar por fecha:</label>
-                    <input type="date" id="fecha-filtro" class="filter-input">
-                </div>
-                <div class="filter-group">
-                    <label for="cancha-filtro">Filtrar por cancha:</label>
-                    <select id="cancha-filtro" class="filter-input">
-                        <option value="">Todas las canchas</option>
-                        <option value="Cancha 1">Cancha 1</option>
-                        <option value="Cancha 2">Cancha 2</option>
-                    </select>
-                </div>
+            <div class="horario-grid">
+                <table class="horario-table">
+                    <thead>
+                        <tr>
+                            <th>Hora</th>
+                            <th>Cancha 1</th>
+                            <th>Cancha 2</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-horarios">
+                        <!-- Se llenará dinámicamente -->
+                    </tbody>
+                </table>
             </div>
-
-            <table class="reservas-table">
-                <thead>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Teléfono</th>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Cancha</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-reservas">
-                    <!-- El contenido se cargará dinámicamente -->
-                </tbody>
-            </table>
             
             <div id="mensaje" class="mensaje" style="display: none;"></div>
         </div>
@@ -486,52 +543,66 @@
 
         function actualizarTablaReservas() {
             try {
-                const tbody = document.querySelector('.reservas-table tbody');
+                const tbody = document.getElementById('tabla-horarios');
                 tbody.innerHTML = '';
 
-                if (reservasActuales.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                <p>No hay reservas para mostrar</p>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
+                // Definir horarios
+                const horarios = [
+                    "06:00 - 07:00", "07:00 - 08:00", "08:00 - 09:00", "09:00 - 10:00",
+                    "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00", "13:00 - 14:00",
+                    "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00", "17:00 - 18:00",
+                    "18:00 - 19:00", "19:00 - 20:00", "20:00 - 21:00", "21:00 - 22:00"
+                ];
 
-                reservasActuales.forEach(reserva => {
+                horarios.forEach(horario => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>
-                            <div class="reserva-info">
-                                <strong>${reserva.nombre}</strong>
-                                <span class="reserva-tipo">${reserva.tipo || 'Singles(Tenis)'}</span>
-                                ${reserva.invitado ? `<span class="reserva-invitado">Invitado: ${reserva.invitado}</span>` : ''}
-                                ${reserva.socio ? `<span class="reserva-socio">Socio: ${reserva.socio}</span>` : ''}
-                            </div>
-                        </td>
-                        <td>${reserva.telefono || '-'}</td>
-                        <td>${formatearFecha(reserva.fecha)}</td>
-                        <td>${reserva.horario}</td>
-                        <td>Cancha ${reserva.cancha}</td>
-                        <td>
-                            <span class="estado-badge estado-${(reserva.estado || 'activo').toLowerCase()}">
-                                ${reserva.estado || 'Activo'}
-                            </span>
-                        </td>
-                        <td>
-                            <button onclick="mostrarModalConfirmacion('${reserva._id}')" class="btn btn-danger">
-                                Cancelar
-                            </button>
-                        </td>
-                    `;
+                    const tdHora = document.createElement('td');
+                    tdHora.textContent = horario;
+                    tr.appendChild(tdHora);
+
+                    // Cancha 1
+                    const tdCancha1 = document.createElement('td');
+                    const reservaCancha1 = reservasActuales.find(r => 
+                        r.horario === horario && r.cancha === "1");
+                    
+                    if (reservaCancha1) {
+                        tdCancha1.innerHTML = crearCeldaReserva(reservaCancha1);
+                    } else {
+                        tdCancha1.innerHTML = '<div class="celda-disponible">Disponible</div>';
+                    }
+                    tr.appendChild(tdCancha1);
+
+                    // Cancha 2
+                    const tdCancha2 = document.createElement('td');
+                    const reservaCancha2 = reservasActuales.find(r => 
+                        r.horario === horario && r.cancha === "2");
+                    
+                    if (reservaCancha2) {
+                        tdCancha2.innerHTML = crearCeldaReserva(reservaCancha2);
+                    } else {
+                        tdCancha2.innerHTML = '<div class="celda-disponible">Disponible</div>';
+                    }
+                    tr.appendChild(tdCancha2);
+
                     tbody.appendChild(tr);
                 });
             } catch (error) {
                 console.error('Error al actualizar tabla:', error);
-                mostrarMensaje('Error al actualizar la tabla de reservas', false);
+                mostrarMensaje('Error al actualizar la tabla de horarios', false);
             }
+        }
+
+        function crearCeldaReserva(reserva) {
+            return `
+                <div class="reserva-celda">
+                    <div class="reserva-nombre">${reserva.nombre}</div>
+                    <div class="reserva-tipo">${reserva.tipo || 'Singles(Tenis)'}</div>
+                    ${reserva.invitado ? `<div class="reserva-tipo">Inv: ${reserva.invitado}</div>` : ''}
+                    <button onclick="mostrarModalConfirmacion('${reserva._id}')" class="btn-cancelar">
+                        Cancelar
+                    </button>
+                </div>
+            `;
         }
 
         // Cargar todas las reservas
@@ -568,10 +639,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             verificarAuth();
             cargarReservas();
-            
-            // Asignar eventos a los filtros
-            document.getElementById('fecha-filtro').addEventListener('change', actualizarTablaReservas);
-            document.getElementById('cancha-filtro').addEventListener('change', actualizarTablaReservas);
         });
     </script>
 </body>
