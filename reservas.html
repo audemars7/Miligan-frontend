@@ -110,53 +110,83 @@
         }
 
         .filters {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
-        }
-
-        .filter-group {
-            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .filter-group label {
             display: block;
             margin-bottom: 8px;
-            color: #666;
+            color: #333;
             font-weight: 500;
         }
 
         .filter-group select,
         .filter-group input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
             font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            border-color: var(--primary-green);
+            outline: none;
         }
 
         .reservas-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin-top: 20px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: var(--border-radius);
         }
 
         .reservas-table th {
-            background: var(--light-gray);
+            background: var(--primary-green);
+            color: white;
             padding: 15px;
             text-align: left;
             font-weight: 600;
-            color: #333;
+            border-bottom: 2px solid #1b5e20;
+        }
+
+        .reservas-table th:first-child {
+            border-top-left-radius: var(--border-radius);
+        }
+
+        .reservas-table th:last-child {
+            border-top-right-radius: var(--border-radius);
         }
 
         .reservas-table td {
             padding: 15px;
             border-bottom: 1px solid #eee;
-            color: #666;
+            color: #333;
+            background: white;
         }
 
-        .reservas-table tr:hover {
+        .reservas-table tr:hover td {
             background-color: #f8f9fa;
+        }
+
+        .reservas-table tr:last-child td:first-child {
+            border-bottom-left-radius: var(--border-radius);
+        }
+
+        .reservas-table tr:last-child td:last-child {
+            border-bottom-right-radius: var(--border-radius);
         }
 
         .empty-state {
@@ -243,10 +273,12 @@
         }
 
         .estado-badge {
+            display: inline-block;
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.9em;
             font-weight: 500;
+            text-align: center;
         }
 
         .estado-activo {
@@ -257,6 +289,32 @@
         .estado-cancelado {
             background: #f8d7da;
             color: #721c24;
+        }
+
+        .estado-pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .reserva-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .reserva-tipo {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .reserva-invitado {
+            font-size: 0.85em;
+            color: #dc3545;
+        }
+
+        .reserva-socio {
+            font-size: 0.85em;
+            color: var(--primary-green);
         }
 
         .acciones-container {
@@ -427,43 +485,53 @@
         }
 
         function actualizarTablaReservas() {
-            const tabla = document.getElementById('tabla-reservas');
-            const emptyState = document.getElementById('empty-state');
-            const fechaFiltro = document.getElementById('fecha-filtro').value;
-            const canchaFiltro = document.getElementById('cancha-filtro').value;
+            try {
+                const tbody = document.querySelector('.reservas-table tbody');
+                tbody.innerHTML = '';
 
-            let reservasFiltradas = [...reservasActuales];
+                if (reservasActuales.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <p>No hay reservas para mostrar</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
 
-            if (fechaFiltro) {
-                reservasFiltradas = reservasFiltradas.filter(r => r.fecha === fechaFiltro);
+                reservasActuales.forEach(reserva => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>
+                            <div class="reserva-info">
+                                <strong>${reserva.nombre}</strong>
+                                <span class="reserva-tipo">${reserva.tipo || 'Singles(Tenis)'}</span>
+                                ${reserva.invitado ? `<span class="reserva-invitado">Invitado: ${reserva.invitado}</span>` : ''}
+                                ${reserva.socio ? `<span class="reserva-socio">Socio: ${reserva.socio}</span>` : ''}
+                            </div>
+                        </td>
+                        <td>${reserva.telefono || '-'}</td>
+                        <td>${formatearFecha(reserva.fecha)}</td>
+                        <td>${reserva.horario}</td>
+                        <td>Cancha ${reserva.cancha}</td>
+                        <td>
+                            <span class="estado-badge estado-${(reserva.estado || 'activo').toLowerCase()}">
+                                ${reserva.estado || 'Activo'}
+                            </span>
+                        </td>
+                        <td>
+                            <button onclick="mostrarModalConfirmacion('${reserva._id}')" class="btn btn-danger">
+                                Cancelar
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error al actualizar tabla:', error);
+                mostrarMensaje('Error al actualizar la tabla de reservas', false);
             }
-
-            if (canchaFiltro) {
-                reservasFiltradas = reservasFiltradas.filter(r => r.cancha === canchaFiltro);
-            }
-
-            if (reservasFiltradas.length === 0) {
-                tabla.innerHTML = '';
-                emptyState.style.display = 'block';
-                return;
-            }
-
-            emptyState.style.display = 'none';
-            tabla.innerHTML = reservasFiltradas.map(reserva => `
-                <tr>
-                    <td>${reserva.nombre}</td>
-                    <td>${reserva.telefono}</td>
-                    <td>${formatearFecha(reserva.fecha)}</td>
-                    <td>${reserva.horario}</td>
-                    <td>${reserva.cancha}</td>
-                    <td class="estado-${reserva.estado.toLowerCase()} estado-badge">${reserva.estado}</td>
-                    <td>
-                        <button onclick="mostrarModalConfirmacion(${reserva.id})" class="btn btn-danger">
-                            Eliminar
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
         }
 
         // Cargar todas las reservas
