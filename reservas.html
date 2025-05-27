@@ -614,6 +614,35 @@
             setTimeout(() => mensaje.remove(), 3000);
         }
 
+        function eliminarReserva(id) {
+            if (!confirm('¿Seguro que quieres eliminar esta reserva?')) return;
+
+            console.log('Intentando eliminar reserva con ID:', id);
+
+            fetchAuth(`${API_URL}/admin/reservas/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('Respuesta del servidor:', response.status);
+                if (!response.ok) {
+                    return response.json().then(data => Promise.reject(data));
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Reserva eliminada:', data);
+                mostrarMensaje(data.mensaje || 'Reserva eliminada con éxito', true);
+                cargarReservas();
+            })
+            .catch(err => {
+                console.error('Error al eliminar:', err);
+                mostrarMensaje(err.mensaje || 'Error al eliminar reserva', false);
+            });
+        }
+
         function actualizarTablaReservas() {
             const tabla = document.getElementById('tabla-reservas');
             const emptyState = document.getElementById('empty-state');
@@ -658,11 +687,11 @@
                         <td class="celda-hora">${horario.replace(' - ', '-')}</td>
                         <td class="${reservaCancha1 ? 'celda-reservada' : 'celda-disponible'}" style="position: relative;">
                             ${reservaCancha1 ? reservaCancha1.nombre.toUpperCase() : 'DISPONIBLE'}
-                            ${reservaCancha1 ? '<span class="icono-eliminar" style="position: absolute; top: 2px; right: 5px; color: white; cursor: pointer; font-weight: bold;">×</span>' : ''}
+                            ${reservaCancha1 ? `<span class="icono-eliminar" onclick="eliminarReserva(${reservaCancha1.id})" style="position: absolute; top: 2px; right: 5px; color: white; cursor: pointer; font-weight: bold;">×</span>` : ''}
                         </td>
                         <td class="${reservaCancha2 ? 'celda-reservada' : 'celda-disponible'}" style="position: relative;">
                             ${reservaCancha2 ? reservaCancha2.nombre.toUpperCase() : 'DISPONIBLE'}
-                            ${reservaCancha2 ? '<span class="icono-eliminar" style="position: absolute; top: 2px; right: 5px; color: white; cursor: pointer; font-weight: bold;">×</span>' : ''}
+                            ${reservaCancha2 ? `<span class="icono-eliminar" onclick="eliminarReserva(${reservaCancha2.id})" style="position: absolute; top: 2px; right: 5px; color: white; cursor: pointer; font-weight: bold;">×</span>` : ''}
                         </td>
                     </tr>
                 `;
