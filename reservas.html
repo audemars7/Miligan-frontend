@@ -196,9 +196,9 @@
         }
 
         .celda-disponible {
-            background: var(--white) !important;
-            color: var(--primary-blue) !important;
-            border: 2px solid var(--light-blue) !important;
+            background: #6c757d !important;
+            color: var(--white) !important;
+            border: 2px solid #5a6268 !important;
         }
 
         .empty-state {
@@ -532,13 +532,6 @@
                 </div>
             </div>
 
-            <div class="filters">
-                <div class="filter-group">
-                    <label for="fecha-filtro">Filtrar por fecha:</label>
-                    <input type="date" id="fecha-filtro" class="date-selector">
-                </div>
-            </div>
-
             <table class="reservas-table">
                 <thead>
                     <tr>
@@ -624,7 +617,10 @@
         function actualizarTablaReservas() {
             const tabla = document.getElementById('tabla-reservas');
             const emptyState = document.getElementById('empty-state');
-            const fechaFiltro = document.getElementById('fecha-filtro')?.value || '';
+            
+            // Obtener fecha desde la URL o usar fecha actual
+            const urlParams = new URLSearchParams(window.location.search);
+            const fechaFiltro = urlParams.get('fecha') || new Date().toISOString().split('T')[0];
 
             // Horarios disponibles
             const horarios = [
@@ -690,13 +686,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             cargarReservas();
-            
-            // Agregar event listeners para los filtros si existen
-            const fechaFiltro = document.getElementById('fecha-filtro');
-            
-            if (fechaFiltro) {
-                fechaFiltro.addEventListener('change', actualizarTablaReservas);
-            }
         });
     </script>
 </body>
