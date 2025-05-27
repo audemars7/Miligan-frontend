@@ -636,15 +636,23 @@
         async function cargarReservas() {
             try {
                 const response = await fetchAuth(`${API_URL}/admin/reservas`);
-                if (!response.ok) {
-                    throw new Error('Error al cargar las reservas');
+                if (!response || !response.ok) {
+                    let mensaje = 'Error al cargar las reservas';
+                    if (response) {
+                        try {
+                            const data = await response.json();
+                            mensaje = data.mensaje || mensaje;
+                        } catch {}
+                    }
+                    mostrarMensaje(mensaje, false);
+                    return;
                 }
                 const data = await response.json();
                 reservasActuales = data;
                 actualizarTablaReservas();
             } catch (error) {
-                console.error('Error:', error);
-                mostrarMensaje('Error al cargar las reservas', false);
+                mostrarMensaje('Error de conexión o autenticación', false);
+                console.error('Error al cargar reservas:', error);
             }
         }
 
