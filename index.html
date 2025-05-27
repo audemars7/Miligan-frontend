@@ -403,9 +403,11 @@
             window.location.href = 'login.html';
         }
 
-        // Funciones de manejo de fechas
+        // Función para obtener la fecha actual en Perú
         function obtenerFechaActual() {
-            return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
+            const ahora = new Date();
+            const fechaPeru = new Date(ahora.toLocaleString("en-US", {timeZone: "America/Lima"}));
+            return fechaPeru.toISOString().split('T')[0];
         }
 
         function formatearFecha(fecha) {
@@ -415,21 +417,18 @@
                 day: '2-digit',
                 timeZone: 'America/Lima'
             };
-            return new Date(fecha).toLocaleDateString('es-ES', opciones);
+            return new Date(fecha + 'T12:00:00').toLocaleDateString('es-PE', opciones);
         }
 
         function esFechaValida(fecha) {
-            const fechaActual = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-            const fechaComparar = new Date(fecha);
-            fechaActual.setHours(0, 0, 0, 0);
-            fechaComparar.setHours(0, 0, 0, 0);
-            return fechaComparar >= fechaActual;
+            const fechaActualPeru = obtenerFechaActual();
+            return fecha >= fechaActualPeru;
         }
 
         // Función para actualizar la fecha mínima y la fecha seleccionada
         function actualizarFechas() {
             const fechaInput = document.getElementById('fecha');
-            const fechaMinima = obtenerFechaActual().toISOString().split('T')[0];
+            const fechaMinima = obtenerFechaActual();
             
             // Actualizar la fecha mínima
             fechaInput.min = fechaMinima;
@@ -442,14 +441,14 @@
 
         // Inicializar fechas
         const fechaInput = document.getElementById('fecha');
-        fechaInput.min = obtenerFechaActual().toISOString().split('T')[0];
-        fechaInput.value = obtenerFechaActual().toISOString().split('T')[0];
+        fechaInput.min = obtenerFechaActual();
+        fechaInput.value = obtenerFechaActual();
 
         // Event listener para validar la fecha seleccionada
         fechaInput.addEventListener('change', function() {
             if (!esFechaValida(this.value)) {
                 mostrarMensaje('No se pueden seleccionar fechas anteriores al día actual', false);
-                this.value = obtenerFechaActual().toISOString().split('T')[0];
+                this.value = obtenerFechaActual();
             }
             cargarReservas();
         });
