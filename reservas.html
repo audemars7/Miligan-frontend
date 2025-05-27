@@ -522,23 +522,14 @@
                     <label for="fecha-filtro">Filtrar por fecha:</label>
                     <input type="date" id="fecha-filtro" class="date-selector">
                 </div>
-                <div class="filter-group">
-                    <label for="cancha-filtro">Filtrar por cancha:</label>
-                    <select id="cancha-filtro">
-                        <option value="">Todas las canchas</option>
-                        <option value="Cancha 1">Cancha 1</option>
-                        <option value="Cancha 2">Cancha 2</option>
-                    </select>
-                </div>
             </div>
 
             <table class="reservas-table">
                 <thead>
                     <tr>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Cancha</th>
-                        <th>Cliente</th>
+                        <th>HORA</th>
+                        <th>CANCHA 1</th>
+                        <th>CANCHA 2</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-reservas">
@@ -547,7 +538,7 @@
             </table>
 
             <div id="empty-state" class="empty-state" style="display: none;">
-                <p>No hay reservas que coincidan con los filtros seleccionados.</p>
+                <p>No hay reservas para mostrar.</p>
             </div>
         </div>
     </div>
@@ -619,33 +610,44 @@
             const tabla = document.getElementById('tabla-reservas');
             const emptyState = document.getElementById('empty-state');
             const fechaFiltro = document.getElementById('fecha-filtro')?.value || '';
-            const canchaFiltro = document.getElementById('cancha-filtro')?.value || '';
+
+            // Horarios disponibles
+            const horarios = [
+                "06:00 - 07:00",
+                "07:00 - 08:00", 
+                "08:00 - 09:00",
+                "09:00 - 10:00",
+                "10:00 - 11:00",
+                "11:00 - 12:00",
+                "12:00 - 13:00",
+                "13:00 - 14:00",
+                "14:00 - 15:00",
+                "15:00 - 16:00",
+                "16:00 - 17:00",
+                "17:00 - 18:00"
+            ];
 
             let reservasFiltradas = [...reservasActuales];
-
             if (fechaFiltro) {
                 reservasFiltradas = reservasFiltradas.filter(r => r.fecha === fechaFiltro);
             }
 
-            if (canchaFiltro) {
-                reservasFiltradas = reservasFiltradas.filter(r => r.cancha === canchaFiltro);
-            }
+            // Generar filas de la tabla
+            tabla.innerHTML = horarios.map(horario => {
+                // Buscar reservas para este horario
+                const reservaCancha1 = reservasFiltradas.find(r => r.horario === horario && r.cancha === "Cancha 1");
+                const reservaCancha2 = reservasFiltradas.find(r => r.horario === horario && r.cancha === "Cancha 2");
 
-            if (reservasFiltradas.length === 0) {
-                tabla.innerHTML = '';
-                emptyState.style.display = 'block';
-                return;
-            }
+                return `
+                    <tr>
+                        <td style="font-weight: bold; background: var(--light-blue); color: var(--text-primary);">${horario.replace(' - ', '-')}</td>
+                        <td style="text-align: center; font-weight: 500; ${reservaCancha1 ? 'background: var(--primary-blue); color: var(--white);' : 'background: var(--white); color: var(--primary-blue); border: 1px solid var(--light-blue);'}">${reservaCancha1 ? reservaCancha1.nombre.toUpperCase() : 'DISPONIBLE'}</td>
+                        <td style="text-align: center; font-weight: 500; ${reservaCancha2 ? 'background: var(--primary-blue); color: var(--white);' : 'background: var(--white); color: var(--primary-blue); border: 1px solid var(--light-blue);'}">${reservaCancha2 ? reservaCancha2.nombre.toUpperCase() : 'DISPONIBLE'}</td>
+                    </tr>
+                `;
+            }).join('');
 
             emptyState.style.display = 'none';
-            tabla.innerHTML = reservasFiltradas.map(reserva => `
-                <tr>
-                    <td>${formatearFecha(reserva.fecha)}</td>
-                    <td>${reserva.horario}</td>
-                    <td>Cancha ${reserva.cancha}</td>
-                    <td>${reserva.nombre}</td>
-                </tr>
-            `).join('');
         }
 
         async function cargarReservas() {
@@ -676,13 +678,9 @@
             
             // Agregar event listeners para los filtros si existen
             const fechaFiltro = document.getElementById('fecha-filtro');
-            const canchaFiltro = document.getElementById('cancha-filtro');
             
             if (fechaFiltro) {
                 fechaFiltro.addEventListener('change', actualizarTablaReservas);
-            }
-            if (canchaFiltro) {
-                canchaFiltro.addEventListener('change', actualizarTablaReservas);
             }
         });
     </script>
