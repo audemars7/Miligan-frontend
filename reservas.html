@@ -647,6 +647,11 @@
             });
         }
 
+        function extraerNumeroCancha(valor) {
+            const match = valor.match(/\d+/);
+            return match ? match[0] : valor;
+        }
+
         function actualizarTablaReservas() {
             const tabla = document.getElementById('tabla-reservas');
             const emptyState = document.getElementById('empty-state');
@@ -679,8 +684,8 @@
             // Generar filas de la tabla
             tabla.innerHTML = horarios.map(horario => {
                 // Buscar reservas para este horario
-                const reservaCancha1 = reservasFiltradas.find(r => r.horario === horario && r.cancha === "Cancha 1");
-                const reservaCancha2 = reservasFiltradas.find(r => r.horario === horario && r.cancha === "Cancha 2");
+                const reservaCancha1 = reservasFiltradas.find(r => r.horario === horario && extraerNumeroCancha(r.cancha) === '1');
+                const reservaCancha2 = reservasFiltradas.find(r => r.horario === horario && extraerNumeroCancha(r.cancha) === '2');
 
                 // Debug: verificar que tenemos IDs
                 if (reservaCancha1) console.log('Reserva Cancha 1:', reservaCancha1.id, reservaCancha1.nombre);
