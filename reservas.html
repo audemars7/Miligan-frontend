@@ -517,6 +517,21 @@
                 </div>
             </div>
 
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="fecha-filtro">Filtrar por fecha:</label>
+                    <input type="date" id="fecha-filtro" class="date-selector">
+                </div>
+                <div class="filter-group">
+                    <label for="cancha-filtro">Filtrar por cancha:</label>
+                    <select id="cancha-filtro">
+                        <option value="">Todas las canchas</option>
+                        <option value="Cancha 1">Cancha 1</option>
+                        <option value="Cancha 2">Cancha 2</option>
+                    </select>
+                </div>
+            </div>
+
             <table class="reservas-table">
                 <thead>
                     <tr>
@@ -603,8 +618,8 @@
         function actualizarTablaReservas() {
             const tabla = document.getElementById('tabla-reservas');
             const emptyState = document.getElementById('empty-state');
-            const fechaFiltro = document.getElementById('fecha-filtro').value;
-            const canchaFiltro = document.getElementById('cancha-filtro').value;
+            const fechaFiltro = document.getElementById('fecha-filtro')?.value || '';
+            const canchaFiltro = document.getElementById('cancha-filtro')?.value || '';
 
             let reservasFiltradas = [...reservasActuales];
 
@@ -659,9 +674,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             cargarReservas();
             
-            // Agregar event listeners para los filtros
-            document.getElementById('fecha-filtro').addEventListener('change', actualizarTablaReservas);
-            document.getElementById('cancha-filtro').addEventListener('change', actualizarTablaReservas);
+            // Agregar event listeners para los filtros si existen
+            const fechaFiltro = document.getElementById('fecha-filtro');
+            const canchaFiltro = document.getElementById('cancha-filtro');
+            
+            if (fechaFiltro) {
+                fechaFiltro.addEventListener('change', actualizarTablaReservas);
+            }
+            if (canchaFiltro) {
+                canchaFiltro.addEventListener('change', actualizarTablaReservas);
+            }
         });
     </script>
 </body>
