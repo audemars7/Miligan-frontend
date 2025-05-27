@@ -474,6 +474,11 @@
             return hora.replace(' - ', '-');
         }
 
+        function extraerNumeroCancha(valor) {
+            const match = valor.match(/\d+/);
+            return match ? match[0] : valor;
+        }
+
         function actualizarTablaReservas() {
             const tabla = document.getElementById('tabla-reservas');
             tabla.innerHTML = '';
@@ -481,21 +486,18 @@
 
             horariosDisponibles.forEach(horario => {
                 const fila = document.createElement('tr');
-                
                 // Columna de hora
                 const tdHora = document.createElement('td');
                 tdHora.textContent = horario;
                 fila.appendChild(tdHora);
-
                 // Columnas para cada cancha
                 ['Cancha 1', 'Cancha 2'].forEach(cancha => {
                     const td = document.createElement('td');
                     const reservaExistente = reservasActuales.find(r => 
-                        r.cancha === cancha && 
+                        extraerNumeroCancha(r.cancha) === extraerNumeroCancha(cancha) && 
                         r.horario === horario && 
                         r.fecha === fechaSeleccionada
                     );
-
                     if (reservaExistente) {
                         const btn = document.createElement('button');
                         btn.className = 'btn btn-reservado';
@@ -511,7 +513,6 @@
                     }
                     fila.appendChild(td);
                 });
-
                 tabla.appendChild(fila);
             });
         }
