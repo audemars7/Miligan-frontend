@@ -403,14 +403,6 @@
             window.location.href = 'login.html';
         }
 
-        // Añadir botón de cerrar sesión
-        const headerActions = document.querySelector('.header-actions');
-        const btnCerrarSesion = document.createElement('button');
-        btnCerrarSesion.className = 'btn btn-secondary';
-        btnCerrarSesion.textContent = 'Cerrar Sesión';
-        btnCerrarSesion.onclick = cerrarSesion;
-        headerActions.appendChild(btnCerrarSesion);
-
         // Funciones de manejo de fechas
         function obtenerFechaActual() {
             return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
