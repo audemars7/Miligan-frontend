@@ -406,8 +406,18 @@
         // Función para obtener la fecha actual en Perú
         function obtenerFechaActual() {
             const ahora = new Date();
-            const fechaPeru = new Date(ahora.toLocaleString("en-US", {timeZone: "America/Lima"}));
-            return fechaPeru.toISOString().split('T')[0];
+            // Perú está UTC-5 (sin horario de verano)
+            const offsetPeru = -5 * 60; // -5 horas en minutos
+            const offsetLocal = ahora.getTimezoneOffset(); // offset local en minutos
+            const diferencia = offsetPeru - offsetLocal;
+            
+            const fechaPeru = new Date(ahora.getTime() + (diferencia * 60 * 1000));
+            
+            const año = fechaPeru.getFullYear();
+            const mes = String(fechaPeru.getMonth() + 1).padStart(2, '0');
+            const dia = String(fechaPeru.getDate()).padStart(2, '0');
+            
+            return `${año}-${mes}-${dia}`;
         }
 
         function formatearFecha(fecha) {
