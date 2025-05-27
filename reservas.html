@@ -619,10 +619,14 @@
 
             console.log('Intentando eliminar reserva con ID:', id);
 
-            fetchAuth(`${API_URL}/admin/reservas/${id}`, {
+            fetchAuth(`${API_URL}/reservas/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'DELETE',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
                 }
             })
             .then(response => {
