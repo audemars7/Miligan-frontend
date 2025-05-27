@@ -649,6 +649,10 @@
                 const reservaCancha1 = reservasFiltradas.find(r => r.horario === horario && r.cancha === "Cancha 1");
                 const reservaCancha2 = reservasFiltradas.find(r => r.horario === horario && r.cancha === "Cancha 2");
 
+                // Debug: verificar que tenemos IDs
+                if (reservaCancha1) console.log('Reserva Cancha 1:', reservaCancha1.id, reservaCancha1.nombre);
+                if (reservaCancha2) console.log('Reserva Cancha 2:', reservaCancha2.id, reservaCancha2.nombre);
+
                 return `
                     <tr>
                         <td class="celda-hora">${horario.replace(' - ', '-')}</td>
