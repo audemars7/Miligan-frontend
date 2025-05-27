@@ -155,30 +155,50 @@
         .reservas-table {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 0;
+            border-spacing: 8px;
             margin-top: 20px;
-            background: var(--white);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-radius: var(--border-radius);
-            overflow: hidden;
+            background: transparent;
         }
 
         .reservas-table th {
             background: var(--primary-blue);
             color: var(--white);
             padding: 15px;
-            text-align: left;
+            text-align: center;
             font-weight: 600;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
         }
 
         .reservas-table td {
             padding: 15px;
-            border-bottom: 1px solid var(--light-blue);
-            color: var(--text-primary);
+            text-align: center;
+            font-weight: 500;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
         }
 
-        .reservas-table tr:hover td {
-            background-color: var(--light-blue);
+        .reservas-table td:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .celda-hora {
+            background: var(--light-blue) !important;
+            color: var(--text-primary) !important;
+            font-weight: 600 !important;
+        }
+
+        .celda-reservada {
+            background: var(--primary-blue) !important;
+            color: var(--white) !important;
+        }
+
+        .celda-disponible {
+            background: var(--white) !important;
+            color: var(--primary-blue) !important;
+            border: 2px solid var(--light-blue) !important;
         }
 
         .empty-state {
@@ -444,11 +464,6 @@
             margin-bottom: 4px;
         }
 
-        .celda-disponible {
-            color: var(--primary-blue);
-            font-weight: 500;
-        }
-
         .btn-cancelar {
             margin-top: 8px;
             padding: 4px 8px;
@@ -640,9 +655,9 @@
 
                 return `
                     <tr>
-                        <td style="font-weight: bold; background: var(--light-blue); color: var(--text-primary);">${horario.replace(' - ', '-')}</td>
-                        <td style="text-align: center; font-weight: 500; ${reservaCancha1 ? 'background: var(--primary-blue); color: var(--white);' : 'background: var(--white); color: var(--primary-blue); border: 1px solid var(--light-blue);'}">${reservaCancha1 ? reservaCancha1.nombre.toUpperCase() : 'DISPONIBLE'}</td>
-                        <td style="text-align: center; font-weight: 500; ${reservaCancha2 ? 'background: var(--primary-blue); color: var(--white);' : 'background: var(--white); color: var(--primary-blue); border: 1px solid var(--light-blue);'}">${reservaCancha2 ? reservaCancha2.nombre.toUpperCase() : 'DISPONIBLE'}</td>
+                        <td class="celda-hora">${horario.replace(' - ', '-')}</td>
+                        <td class="${reservaCancha1 ? 'celda-reservada' : 'celda-disponible'}">${reservaCancha1 ? reservaCancha1.nombre.toUpperCase() : 'DISPONIBLE'}</td>
+                        <td class="${reservaCancha2 ? 'celda-reservada' : 'celda-disponible'}">${reservaCancha2 ? reservaCancha2.nombre.toUpperCase() : 'DISPONIBLE'}</td>
                     </tr>
                 `;
             }).join('');
