@@ -479,17 +479,32 @@
                         r.fecha === fechaSeleccionada
                     );
 
-                    const btn = document.createElement('button');
                     if (reservaExistente) {
-                        btn.className = 'btn btn-reservado';
-                        btn.textContent = 'Reservado';
-                        btn.disabled = true;
+                        const contenedor = document.createElement('div');
+                        contenedor.style.display = 'flex';
+                        contenedor.style.flexDirection = 'column';
+                        contenedor.style.gap = '5px';
+
+                        const btnReservado = document.createElement('button');
+                        btnReservado.className = 'btn btn-reservado';
+                        btnReservado.textContent = reservaExistente.nombre;
+                        btnReservado.disabled = true;
+
+                        const btnEliminar = document.createElement('button');
+                        btnEliminar.className = 'btn btn-danger';
+                        btnEliminar.textContent = 'Eliminar';
+                        btnEliminar.onclick = () => eliminarReserva(reservaExistente.id);
+
+                        contenedor.appendChild(btnReservado);
+                        contenedor.appendChild(btnEliminar);
+                        td.appendChild(contenedor);
                     } else {
+                        const btn = document.createElement('button');
                         btn.className = 'btn btn-disponible';
                         btn.textContent = 'Disponible';
                         btn.onclick = () => mostrarModalReserva(cancha, horario, fechaSeleccionada);
+                        td.appendChild(btn);
                     }
-                    td.appendChild(btn);
                     fila.appendChild(td);
                 });
 
@@ -628,6 +643,25 @@
             cargarHorarios();
             cargarReservas();
         });
+
+        function eliminarReserva(id) {
+            if (!confirm('¿Seguro que quieres eliminar esta reserva?')) return;
+
+            fetchAuth(`${API_URL}/admin/reservas/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Error al eliminar');
+                return response.json();
+            })
+            .then(data => {
+                mostrarMensaje(data.mensaje || 'Reserva eliminada con éxito', true);
+                cargarReservas();
+            })
+            .catch(err => {
+                mostrarMensaje(err.message || 'Error al eliminar reserva', false);
+            });
+        }
   </script>
 </body>
 </html>
