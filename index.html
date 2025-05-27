@@ -527,12 +527,14 @@
         }
 
         // Cargar horarios
-        fetchAuth(`${API_URL}/horarios`)
-            .then(response => response.json())
-            .then(horarios => {
-                horariosDisponibles = horarios;
-                actualizarTablaReservas();
-            });
+        function cargarHorarios() {
+            fetchAuth(`${API_URL}/horarios`)
+                .then(response => response.json())
+                .then(horarios => {
+                    horariosDisponibles = horarios;
+                    actualizarTablaReservas();
+                });
+        }
 
         // Cargar reservas
         function cargarReservas() {
