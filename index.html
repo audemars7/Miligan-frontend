@@ -134,7 +134,7 @@
         }
 
         .btn-reservado {
-            background: #dc3545;
+            background: #6c757d;
             color: white;
             width: 100%;
             cursor: not-allowed;
@@ -291,61 +291,6 @@
             margin-bottom: 20px;
             padding-bottom: 20px;
             border-bottom: 1px solid var(--light-blue);
-        }
-
-        /* Estilos para el contenedor de reserva */
-        .reserva-container {
-            position: relative;
-            background: var(--light-blue);
-            border: 1px solid var(--primary-light);
-            padding: 12px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .reserva-container:hover {
-            box-shadow: 0 2px 12px rgba(25, 118, 210, 0.15);
-        }
-
-        .reserva-nombre {
-            color: var(--text-primary);
-            font-weight: 500;
-            margin: 0;
-            padding: 5px;
-        }
-
-        /* Estilos para el ícono de eliminar */
-        .delete-icon {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 22px;
-            height: 22px;
-            background: var(--white);
-            border: 2px solid var(--primary-blue);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--primary-blue);
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            opacity: 0;
-            transform: scale(0.8);
-        }
-
-        .reserva-container:hover .delete-icon {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .delete-icon:hover {
-            background: var(--primary-blue);
-            color: var(--white);
-            transform: scale(1.1);
         }
     </style>
 </head>
@@ -548,27 +493,11 @@
                     );
 
                     if (reservaExistente) {
-                        const contenedor = document.createElement('div');
-                        contenedor.className = 'reserva-container';
-
-                        // Nombre de la reserva
-                        const nombreReserva = document.createElement('p');
-                        nombreReserva.className = 'reserva-nombre';
-                        nombreReserva.textContent = reservaExistente.nombre;
-
-                        // Ícono de eliminar
-                        const deleteIcon = document.createElement('div');
-                        deleteIcon.className = 'delete-icon';
-                        deleteIcon.innerHTML = '×';  // Usar × como ícono de cerrar
-                        deleteIcon.title = 'Eliminar reserva';
-                        deleteIcon.onclick = (e) => {
-                            e.stopPropagation();  // Evitar que el clic se propague
-                            eliminarReserva(reservaExistente.id);
-                        };
-
-                        contenedor.appendChild(nombreReserva);
-                        contenedor.appendChild(deleteIcon);
-                        td.appendChild(contenedor);
+                        const btn = document.createElement('button');
+                        btn.className = 'btn btn-reservado';
+                        btn.textContent = 'Reservado';
+                        btn.disabled = true;
+                        td.appendChild(btn);
                     } else {
                         const btn = document.createElement('button');
                         btn.className = 'btn btn-disponible';
@@ -714,25 +643,6 @@
             cargarHorarios();
             cargarReservas();
         });
-
-        function eliminarReserva(id) {
-            if (!confirm('¿Seguro que quieres eliminar esta reserva?')) return;
-
-            fetchAuth(`${API_URL}/admin/reservas/${id}`, {
-                method: 'DELETE'
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Error al eliminar');
-                return response.json();
-            })
-            .then(data => {
-                mostrarMensaje(data.mensaje || 'Reserva eliminada con éxito', true);
-                cargarReservas();
-            })
-            .catch(err => {
-                mostrarMensaje(err.message || 'Error al eliminar reserva', false);
-            });
-        }
   </script>
 </body>
 </html>
