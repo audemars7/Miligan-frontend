@@ -305,7 +305,10 @@
         <div class="main-card">
             <div class="header-actions">
                 <h2>Elige la cancha</h2>
-                <a href="reservas.html" class="btn btn-secondary">Ver todas las reservas</a>
+                <div style="display: flex; gap: 10px;">
+                    <a href="#" id="ver-reservas-link" class="btn btn-secondary">Ver todas las reservas</a>
+                    <button onclick="cerrarSesion()" class="btn btn-secondary">Cerrar Sesión</button>
+                </div>
             </div>
             
             <input type="date" class="date-selector" id="fecha" min="">
@@ -637,11 +640,22 @@
         // Verificar autenticación al cargar la página
         verificarAuth();
 
+        // Actualizar enlace de ver reservas con la fecha seleccionada
+        function actualizarEnlaceReservas() {
+            const fechaSeleccionada = document.getElementById('fecha').value;
+            const enlace = document.getElementById('ver-reservas-link');
+            enlace.href = `reservas.html?fecha=${fechaSeleccionada}`;
+        }
+
+        // Actualizar enlace cuando cambie la fecha
+        document.getElementById('fecha').addEventListener('change', actualizarEnlaceReservas);
+
         // Modificar la función de inicio para cargar la configuración
         window.addEventListener('DOMContentLoaded', () => {
             cargarConfiguracion();
             cargarHorarios();
             cargarReservas();
+            actualizarEnlaceReservas(); // Inicializar el enlace
         });
   </script>
 </body>
