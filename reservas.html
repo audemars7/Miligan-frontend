@@ -656,8 +656,14 @@
                 return `
                     <tr>
                         <td class="celda-hora">${horario.replace(' - ', '-')}</td>
-                        <td class="${reservaCancha1 ? 'celda-reservada' : 'celda-disponible'}">${reservaCancha1 ? reservaCancha1.nombre.toUpperCase() : 'DISPONIBLE'}</td>
-                        <td class="${reservaCancha2 ? 'celda-reservada' : 'celda-disponible'}">${reservaCancha2 ? reservaCancha2.nombre.toUpperCase() : 'DISPONIBLE'}</td>
+                        <td class="${reservaCancha1 ? 'celda-reservada' : 'celda-disponible'}" style="position: relative;">
+                            ${reservaCancha1 ? reservaCancha1.nombre.toUpperCase() : 'DISPONIBLE'}
+                            ${reservaCancha1 ? '<span class="icono-eliminar" style="position: absolute; top: 2px; right: 5px; color: white; cursor: pointer; font-weight: bold;">×</span>' : ''}
+                        </td>
+                        <td class="${reservaCancha2 ? 'celda-reservada' : 'celda-disponible'}" style="position: relative;">
+                            ${reservaCancha2 ? reservaCancha2.nombre.toUpperCase() : 'DISPONIBLE'}
+                            ${reservaCancha2 ? '<span class="icono-eliminar" style="position: absolute; top: 2px; right: 5px; color: white; cursor: pointer; font-weight: bold;">×</span>' : ''}
+                        </td>
                     </tr>
                 `;
             }).join('');
