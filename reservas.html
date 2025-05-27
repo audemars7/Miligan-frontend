@@ -539,65 +539,12 @@
                 <p>No hay reservas que coincidan con los filtros seleccionados.</p>
             </div>
         </div>
-        
-        <!-- Modal de Confirmación para Eliminar -->
-        <div id="modal-confirmacion" class="modal">
-            <div class="modal-contenido">
-                <div class="modal-header">
-                    <h3>Confirmar Eliminación</h3>
-                    <button class="modal-close" onclick="cerrarModal('modal-confirmacion')">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p>¿Estás seguro de que deseas eliminar esta reserva?</p>
-                </div>
-                <div class="modal-acciones">
-                    <button class="btn-cancelar" onclick="cerrarModal('modal-confirmacion')">Cancelar</button>
-                    <button class="btn-confirmar" id="btn-confirmar-eliminar">Eliminar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal de Edición -->
-        <div id="modal-edicion" class="modal">
-            <div class="modal-contenido">
-                <div class="modal-header">
-                    <h3>Editar Reserva</h3>
-                    <button class="modal-close" onclick="cerrarModal('modal-edicion')">&times;</button>
-                </div>
-                <form id="form-edicion" onsubmit="guardarEdicion(event)">
-                    <input type="hidden" id="reserva-id">
-                    <div class="form-group">
-                        <label for="nombre-edicion">Nombre:</label>
-                        <input type="text" id="nombre-edicion" required>
-                    </div>
-                    <div class="modal-acciones">
-                        <button type="button" class="btn-cancelar" onclick="cerrarModal('modal-edicion')">Cancelar</button>
-                        <button type="submit" class="btn-confirmar">Guardar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
     </div>
 
     <script>
-        // URL base de la API (cambiar en producción)
-        const API_URL = 'https://tennismiligan.onrender.com';  // URL de producción en Render
-
+        const API_URL = 'https://tennismiligan.onrender.com';
         let reservasActuales = [];
 
-        // Función para obtener la fecha actual
-        function obtenerFechaActual() {
-            const hoy = new Date();
-            return hoy.toISOString().split('T')[0];
-        }
-
-        // Función para cerrar sesión
-        function cerrarSesion() {
-            localStorage.removeItem('token');
-            window.location.href = 'login.html';
-        }
-
-        // Verificar autenticación
         function verificarAuth() {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -607,7 +554,11 @@
             return token;
         }
 
-        // Función para hacer peticiones autenticadas
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
         async function fetchAuth(url, options = {}) {
             const token = verificarAuth();
             const headers = {
@@ -701,127 +652,12 @@
             }
         }
 
-        // Cargar reservas al iniciar
         document.addEventListener('DOMContentLoaded', () => {
             cargarReservas();
             
             // Agregar event listeners para los filtros
             document.getElementById('fecha-filtro').addEventListener('change', actualizarTablaReservas);
             document.getElementById('cancha-filtro').addEventListener('change', actualizarTablaReservas);
-        });
-
-        // Función para mostrar modal
-        function mostrarModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.style.display = 'flex';
-            }
-        }
-
-        // Función para cerrar modal
-        function cerrarModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-
-        // Función para editar reserva
-        function editarReserva(id) {
-            const reserva = reservasActuales.find(r => r._id === id);
-            if (reserva) {
-                document.getElementById('reserva-id').value = id;
-                document.getElementById('nombre-edicion').value = reserva.nombre;
-                mostrarModal('modal-edicion');
-            }
-        }
-
-        // Función para guardar edición
-        async function guardarEdicion(event) {
-            event.preventDefault();
-            const id = document.getElementById('reserva-id').value;
-            const nombre = document.getElementById('nombre-edicion').value;
-
-            try {
-                const response = await fetchAuth(`${API_URL}/admin/reservas/${id}`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ nombre })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error al actualizar la reserva');
-                }
-
-                const data = await response.json();
-                mostrarMensaje(data.mensaje, true);
-                cerrarModal('modal-edicion');
-                await cargarReservas();
-            } catch (error) {
-                console.error('Error:', error);
-                mostrarMensaje('Error al actualizar la reserva', false);
-            }
-        }
-
-        // Función para confirmar eliminación
-        function confirmarEliminar(id) {
-            const reserva = reservasActuales.find(r => r._id === id);
-            if (reserva) {
-                mostrarModal('modal-confirmacion');
-            }
-        }
-
-        // Función para eliminar reserva
-        async function eliminarReserva() {
-            const id = document.getElementById('reserva-id').value;
-            const reserva = reservasActuales.find(r => r._id === id);
-            if (reserva) {
-                try {
-                    const response = await fetchAuth(`${API_URL}/admin/reservas/${id}`, {
-                        method: 'DELETE'
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Error al eliminar la reserva');
-                    }
-
-                    const data = await response.json();
-                    mostrarMensaje(data.mensaje, true);
-                    cerrarModal('modal-confirmacion');
-                    await cargarReservas();
-                } catch (error) {
-                    console.error('Error:', error);
-                    mostrarMensaje('Error al eliminar la reserva', false);
-                }
-            }
-        }
-
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('Iniciando sistema de reservas...');
-            cargarReservas();
-
-            // Configurar el botón de confirmar eliminación
-            const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar');
-            if (btnConfirmarEliminar) {
-                btnConfirmarEliminar.addEventListener('click', eliminarReserva);
-            }
-
-            // Configurar el formulario de edición
-            const formEdicion = document.getElementById('form-edicion');
-            if (formEdicion) {
-                formEdicion.addEventListener('submit', guardarEdicion);
-            }
-        });
-
-        // Manejar visibilidad de la página
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                console.log('Página oculta, deteniendo actualizaciones');
-                // detenerActualizaciones();
-            } else {
-                console.log('Página visible, reiniciando actualizaciones');
-                cargarReservas();
-            }
         });
     </script>
 </body>

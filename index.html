@@ -279,6 +279,53 @@
             align-items: center;
             margin-bottom: 20px;
         }
+
+        /* Estilos para el contenedor de reserva */
+        .reserva-container {
+            position: relative;
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .reserva-nombre {
+            color: #721c24;
+            font-weight: 500;
+            margin: 0;
+            padding: 5px;
+        }
+
+        /* Estilos para el ícono de eliminar */
+        .delete-icon {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: #dc3545;
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .reserva-container:hover .delete-icon {
+            opacity: 1;
+        }
+
+        .delete-icon:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -481,22 +528,25 @@
 
                     if (reservaExistente) {
                         const contenedor = document.createElement('div');
-                        contenedor.style.display = 'flex';
-                        contenedor.style.flexDirection = 'column';
-                        contenedor.style.gap = '5px';
+                        contenedor.className = 'reserva-container';
 
-                        const btnReservado = document.createElement('button');
-                        btnReservado.className = 'btn btn-reservado';
-                        btnReservado.textContent = reservaExistente.nombre;
-                        btnReservado.disabled = true;
+                        // Nombre de la reserva
+                        const nombreReserva = document.createElement('p');
+                        nombreReserva.className = 'reserva-nombre';
+                        nombreReserva.textContent = reservaExistente.nombre;
 
-                        const btnEliminar = document.createElement('button');
-                        btnEliminar.className = 'btn btn-danger';
-                        btnEliminar.textContent = 'Eliminar';
-                        btnEliminar.onclick = () => eliminarReserva(reservaExistente.id);
+                        // Ícono de eliminar
+                        const deleteIcon = document.createElement('div');
+                        deleteIcon.className = 'delete-icon';
+                        deleteIcon.innerHTML = '×';  // Usar × como ícono de cerrar
+                        deleteIcon.title = 'Eliminar reserva';
+                        deleteIcon.onclick = (e) => {
+                            e.stopPropagation();  // Evitar que el clic se propague
+                            eliminarReserva(reservaExistente.id);
+                        };
 
-                        contenedor.appendChild(btnReservado);
-                        contenedor.appendChild(btnEliminar);
+                        contenedor.appendChild(nombreReserva);
+                        contenedor.appendChild(deleteIcon);
                         td.appendChild(contenedor);
                     } else {
                         const btn = document.createElement('button');
