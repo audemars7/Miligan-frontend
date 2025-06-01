@@ -384,7 +384,7 @@
                 </div>
             </div>
             
-            <input type="date" class="date-selector" id="fecha" min="">
+            <input type="date" class="date-selector" id="fecha">
 
             <table class="reservas-grid">
                 <thead>
@@ -536,15 +536,10 @@
 
         // Inicializar fechas
         const fechaInput = document.getElementById('fecha');
-        fechaInput.min = obtenerFechaActual();
         fechaInput.value = obtenerFechaActual();
 
-        // Event listener para validar la fecha seleccionada
+        // Event listener para cargar reservas al cambiar la fecha (sin validación de fecha pasada)
         fechaInput.addEventListener('change', function() {
-            if (!esFechaValida(this.value)) {
-                mostrarMensaje('No se pueden seleccionar fechas anteriores al día actual', false);
-                this.value = obtenerFechaActual();
-            }
             cargarReservas();
         });
 
