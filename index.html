@@ -433,6 +433,7 @@
         let horariosDisponibles = [];
         let reservasActuales = [];
         let config = {};
+        let intervaloPolling = null;
 
         // Verificar autenticación
         function verificarAuth() {
@@ -683,7 +684,23 @@
             cargarHorarios();
             cargarReservas();
             actualizarEnlaceReservas(); // Inicializar el enlace
+            iniciarPollingReservas();
         });
+
+        window.addEventListener('beforeunload', () => {
+            detenerPollingReservas();
+        });
+
+        function iniciarPollingReservas() {
+            if (intervaloPolling) clearInterval(intervaloPolling);
+            intervaloPolling = setInterval(() => {
+                cargarReservas();
+            }, 10000); // cada 10 segundos
+        }
+
+        function detenerPollingReservas() {
+            if (intervaloPolling) clearInterval(intervaloPolling);
+        }
     </script>
 </body>
 </html>
