@@ -888,6 +888,7 @@
     <script>
         const API_URL = 'https://tennismiligan.onrender.com';
         let reservasActuales = [];
+        let intervaloPolling = null;
 
         function verificarAuth() {
             const token = localStorage.getItem('token');
@@ -1131,11 +1132,27 @@
             }
         }
 
+        function iniciarPollingReservas() {
+            if (intervaloPolling) clearInterval(intervaloPolling);
+            intervaloPolling = setInterval(() => {
+                cargarReservas();
+            }, 10000); // cada 10 segundos
+        }
+
+        function detenerPollingReservas() {
+            if (intervaloPolling) clearInterval(intervaloPolling);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const fechaFiltro = urlParams.get('fecha') || obtenerFechaPeru();
             document.getElementById('filtro-fecha').value = fechaFiltro;
             cargarReservas();
+            iniciarPollingReservas();
+        });
+
+        window.addEventListener('beforeunload', () => {
+            detenerPollingReservas();
         });
     </script>
 </body>
