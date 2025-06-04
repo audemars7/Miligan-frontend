@@ -30,6 +30,8 @@
         body {
             background-color: #f8f9fa;
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
 
         .hero-image {
@@ -62,8 +64,8 @@
 
         .container {
             max-width: 1200px;
-            margin: -50px auto 0;
-            padding: 20px;
+            margin: 0 auto;
+            padding: 0 20px;
             position: relative;
         }
 
@@ -191,14 +193,22 @@
         }
 
         .celda-reservada {
-            background: #43a047 !important;
-            color: var(--white) !important;
+            background: #90a4ae !important;
+            color: #fff !important;
         }
 
         .celda-disponible {
-            background: #6c757d !important;
-            color: var(--white) !important;
-            border: 2px solid #5a6268 !important;
+            background: #42a5f5 !important;
+            color: #fff !important;
+            border: 2px solid #42a5f5 !important;
+        }
+
+        .celda-reservada:hover {
+            background: #607d8b !important;
+        }
+
+        .celda-disponible:hover {
+            background: #1976d2 !important;
         }
 
         .empty-state {
@@ -515,27 +525,63 @@
         }
 
         /* Estilos dashboard y resumen */
-        .dashboard-resumen {
-            margin-bottom: 30px;
+        .dashboard-wrapper {
             background: #fff;
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            padding: 24px 30px 18px 30px;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(66,165,245,0.10);
+            padding: 36px 32px 28px 32px;
+            margin: 32px auto 36px auto;
+            max-width: 1200px;
+            width: 95vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .dashboard-rows {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .dashboard-row {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            width: 100%;
+        }
+        .card-resumen {
+            min-width: 160px;
+            max-width: 220px;
+            font-size: 1em;
+            background: #e3f2fd;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(66,165,245,0.10);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 18px 0 12px 0;
+            margin-bottom: 0;
+        }
+        .resumen-bloque {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 18px 0 6px 0;
+            margin-bottom: 18px;
+            box-shadow: 0 1px 4px rgba(66,165,245,0.07);
+        }
+        .resumen-bloque-titulo {
+            color: #1976d2;
+            font-size: 1.15em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            margin-top: 0;
+            text-align: left;
+            padding-left: 18px;
         }
         .resumen-cards {
             display: flex;
             gap: 24px;
             margin-bottom: 18px;
-        }
-        .card-resumen {
-            background: #e3f2fd;
-            border-radius: 12px;
-            padding: 18px 32px;
-            box-shadow: 0 2px 8px rgba(66,165,245,0.10);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 160px;
         }
         .resumen-titulo {
             color: #1976d2;
@@ -584,6 +630,134 @@
         .tabla-gestion tr:hover td {
             background: #e3f2fd;
         }
+        /* Estilos para bloques de resumen */
+        .resumen-bloque {
+            margin-bottom: 18px;
+        }
+        .resumen-bloque-titulo {
+            color: #1976d2;
+            font-size: 1.15em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            margin-top: 0;
+        }
+        .dashboard-panel-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #1a2233;
+            text-align: center;
+            margin-top: 32px;
+            margin-bottom: 32px;
+            letter-spacing: -1px;
+        }
+        .dashboard-main-row {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 32px;
+        }
+        .dashboard-main-block {
+            background: #e3f2fd;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            box-shadow: 0 2px 8px rgba(66,165,245,0.10);
+            width: 600px;
+            max-width: 95vw;
+            overflow: hidden;
+        }
+        .dashboard-main-cell {
+            flex: 1 1 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 0 28px 0;
+            font-size: 1.2em;
+            color: #1a2233;
+            font-weight: 500;
+        }
+        .dashboard-main-cell:not(:last-child) {
+            border-right: 1.5px solid #cfd8dc;
+        }
+        .dashboard-main-value {
+            font-size: 2.3em;
+            font-weight: 700;
+            margin-top: 8px;
+            color: #1a2233;
+            letter-spacing: -1px;
+        }
+        .dashboard-cards-row {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 18px;
+        }
+        .dashboard-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(66,165,245,0.10);
+            min-width: 180px;
+            max-width: 220px;
+            flex: 1 1 0;
+            padding: 22px 0 16px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 1.1em;
+            color: #1a2233;
+            font-weight: 500;
+        }
+        .dashboard-card .dashboard-main-value {
+            font-size: 2em;
+            color: #1a2233;
+        }
+        .dashboard-card-blue {
+            background: #e3f2fd;
+            color: #1976d2;
+            min-width: 200px;
+            max-width: 240px;
+            padding: 16px 18px 12px 18px;
+        }
+        .dashboard-card-blue .dashboard-main-value {
+            font-size: 0.98em;
+        }
+        .dashboard-card .dashboard-hours-list {
+            margin-top: 8px;
+            font-size: 0.98em;
+            color: #1a2233;
+            font-weight: 600;
+            text-align: left;
+        }
+        .dashboard-hours-list {
+            margin-top: 8px;
+            width: 100%;
+            padding: 0 4px;
+        }
+        .hours-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .hours-label {
+            font-size: 1em;
+            color: #1976d2;
+            font-weight: 500;
+        }
+        .hours-value {
+            font-size: 1.08em;
+            color: #1a2233;
+            font-weight: 700;
+            margin-left: 12px;
+            letter-spacing: 0.5px;
+        }
+        .hours-value small {
+            font-weight: 400;
+            font-size: 0.95em;
+            color: #1a2233;
+        }
     </style>
 </head>
 <body>
@@ -593,38 +767,102 @@
         </div>
     </div>
 
-    <div class="container">
-        <div class="dashboard-resumen">
-            <div class="resumen-cards">
-                <div class="card-resumen">
-                    <span class="resumen-titulo">Reservas hoy</span>
-                    <span class="resumen-valor" id="total-hoy">0</span>
-                </div>
-                <div class="card-resumen">
-                    <span class="resumen-titulo">Horas ocupadas</span>
-                    <span class="resumen-valor" id="horas-hoy">0</span>
-                </div>
-                <div class="card-resumen">
-                    <span class="resumen-titulo">Ingresos estimados</span>
-                    <span class="resumen-valor" id="ingresos-hoy">S/ 0</span>
-                </div>
+    <div class="dashboard-panel-title">Panel de Control</div>
+    <div class="dashboard-main-row">
+        <div class="dashboard-main-block">
+            <div class="dashboard-main-cell">
+                Reservas hoy
+                <div class="dashboard-main-value" id="reservas-totales-dia">0</div>
             </div>
-            <div class="filtros-dashboard">
-                <input type="date" id="filtro-fecha" class="filtro-input">
-                <select id="filtro-cancha" class="filtro-input">
-                    <option value="">Todas las canchas</option>
-                    <option value="1">Cancha 1</option>
-                    <option value="2">Cancha 2</option>
-                </select>
-                <input type="text" id="filtro-cliente" class="filtro-input" placeholder="Buscar cliente...">
+            <div class="dashboard-main-cell">
+                Ganancia hoy
+                <div class="dashboard-main-value" id="ganancia-total-dia">S/ 0</div>
             </div>
         </div>
+    </div>
+    <div class="dashboard-cards-row">
+        <div class="dashboard-card">
+            Reservas semana
+            <div class="dashboard-main-value" id="reservas-totales-semana">0</div>
+        </div>
+        <div class="dashboard-card">
+            Ganancia semana
+            <div class="dashboard-main-value" id="ganancia-total-semana">S/ 0</div>
+        </div>
+        <div class="dashboard-card dashboard-card-blue">
+            Horas ocupadas semana
+            <div class="dashboard-hours-list">
+                <div class="hours-row">
+                    <span class="hours-label">Cancha 1</span>
+                    <span class="hours-value" id="horas-cancha1-semana">0 <small>h</small></span>
+                </div>
+                <div class="hours-row">
+                    <span class="hours-label">Cancha 2</span>
+                    <span class="hours-value" id="horas-cancha2-semana">0 <small>h</small></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="dashboard-cards-row">
+        <div class="dashboard-card">
+            Reservas mes
+            <div class="dashboard-main-value" id="reservas-totales-mes">0</div>
+        </div>
+        <div class="dashboard-card">
+            Ganancia mes
+            <div class="dashboard-main-value" id="ganancia-total-mes">S/ 0</div>
+        </div>
+        <div class="dashboard-card dashboard-card-blue">
+            Horas ocupadas mes
+            <div class="dashboard-hours-list">
+                <div class="hours-row">
+                    <span class="hours-label">Cancha 1</span>
+                    <span class="hours-value" id="horas-cancha1-mes">0 <small>h</small></span>
+                </div>
+                <div class="hours-row">
+                    <span class="hours-label">Cancha 2</span>
+                    <span class="hours-value" id="horas-cancha2-mes">0 <small>h</small></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="dashboard-cards-row">
+        <div class="dashboard-card">
+            Reservas año
+            <div class="dashboard-main-value" id="reservas-totales-anio">0</div>
+        </div>
+        <div class="dashboard-card">
+            Ganancia año
+            <div class="dashboard-main-value" id="ganancia-total-anio">S/ 0</div>
+        </div>
+        <div class="dashboard-card dashboard-card-blue">
+            Horas ocupadas año
+            <div class="dashboard-hours-list">
+                <div class="hours-row">
+                    <span class="hours-label">Cancha 1</span>
+                    <span class="hours-value" id="horas-cancha1-anio">0 <small>h</small></span>
+                </div>
+                <div class="hours-row">
+                    <span class="hours-label">Cancha 2</span>
+                    <span class="hours-value" id="horas-cancha2-anio">0 <small>h</small></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
         <div class="main-card">
             <div class="header-actions">
                 <h2>Todas las reservas</h2>
                 <div style="display: flex; gap: 10px;">
                     <a href="index.html" class="btn btn-primary">← Volver a la página principal</a>
                     <button onclick="cerrarSesion()" class="btn btn-danger">Cerrar Sesión</button>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="filtro-fecha">Filtrar por fecha</label>
+                    <input type="date" id="filtro-fecha" class="filtro-input" onchange="cargarReservas()" />
                 </div>
             </div>
 
@@ -745,45 +983,104 @@
             return match ? match[0] : valor;
         }
 
+        function obtenerFechaPeru() {
+            const d = new Date();
+            const peru = new Intl.DateTimeFormat("es-PE", { timeZone: "America/Lima" }).format(d);
+            const [dd, mm, yyyy] = peru.split("/");
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function actualizarDashboard() {
+            // Obtener fecha actual
+            const hoy = new Date();
+            const yyyy = hoy.getFullYear();
+            const mm = hoy.getMonth(); // 0-indexed
+            const dd = hoy.getDate();
+
+            // Calcular inicio de semana (lunes)
+            const diaSemana = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1; // Lunes=0, Domingo=6
+            const inicioSemana = new Date(hoy);
+            inicioSemana.setDate(dd - diaSemana);
+            inicioSemana.setHours(0,0,0,0);
+
+            // Calcular inicio de mes
+            const inicioMes = new Date(yyyy, mm, 1);
+            // Calcular inicio de año
+            const inicioAnio = new Date(yyyy, 0, 1);
+
+            // Inicializar contadores
+            let reservasHoy = 0, reservasSemana = 0, reservasMes = 0, reservasAnio = 0;
+            let gananciaHoy = 0, gananciaSemana = 0, gananciaMes = 0, gananciaAnio = 0;
+            let horasCancha1Semana = 0, horasCancha2Semana = 0;
+            let horasCancha1Mes = 0, horasCancha2Mes = 0;
+            let horasCancha1Anio = 0, horasCancha2Anio = 0;
+
+            // Procesar reservas
+            reservasActuales.forEach(r => {
+                const fechaR = new Date(r.fecha + 'T00:00:00');
+                const cancha = r.cancha && r.cancha.toString().includes('2') ? 2 : 1;
+                // Hoy
+                if (fechaR.getFullYear() === yyyy && fechaR.getMonth() === mm && fechaR.getDate() === dd) {
+                    reservasHoy++;
+                    gananciaHoy += 15;
+                }
+                // Semana
+                if (fechaR >= inicioSemana && fechaR <= hoy) {
+                    reservasSemana++;
+                    gananciaSemana += 15;
+                    if (cancha === 1) horasCancha1Semana++;
+                    if (cancha === 2) horasCancha2Semana++;
+                }
+                // Mes
+                if (fechaR.getFullYear() === yyyy && fechaR.getMonth() === mm) {
+                    reservasMes++;
+                    gananciaMes += 15;
+                    if (cancha === 1) horasCancha1Mes++;
+                    if (cancha === 2) horasCancha2Mes++;
+                }
+                // Año
+                if (fechaR.getFullYear() === yyyy) {
+                    reservasAnio++;
+                    gananciaAnio += 15;
+                    if (cancha === 1) horasCancha1Anio++;
+                    if (cancha === 2) horasCancha2Anio++;
+                }
+            });
+
+            // Actualizar dashboard
+            document.getElementById('reservas-totales-dia').textContent = reservasHoy;
+            document.getElementById('ganancia-total-dia').textContent = `S/ ${gananciaHoy}`;
+            document.getElementById('reservas-totales-semana').textContent = reservasSemana;
+            document.getElementById('ganancia-total-semana').textContent = `S/ ${gananciaSemana}`;
+            document.getElementById('reservas-totales-mes').textContent = reservasMes;
+            document.getElementById('ganancia-total-mes').textContent = `S/ ${gananciaMes}`;
+            document.getElementById('reservas-totales-anio').textContent = reservasAnio;
+            document.getElementById('ganancia-total-anio').textContent = `S/ ${gananciaAnio}`;
+            document.getElementById('horas-cancha1-semana').innerHTML = `${horasCancha1Semana} <small>h</small>`;
+            document.getElementById('horas-cancha2-semana').innerHTML = `${horasCancha2Semana} <small>h</small>`;
+            document.getElementById('horas-cancha1-mes').innerHTML = `${horasCancha1Mes} <small>h</small>`;
+            document.getElementById('horas-cancha2-mes').innerHTML = `${horasCancha2Mes} <small>h</small>`;
+            document.getElementById('horas-cancha1-anio').innerHTML = `${horasCancha1Anio} <small>h</small>`;
+            document.getElementById('horas-cancha2-anio').innerHTML = `${horasCancha2Anio} <small>h</small>`;
+        }
+
         function actualizarTablaReservas() {
             const tabla = document.getElementById('tabla-reservas');
             const emptyState = document.getElementById('empty-state');
-            
-            // Obtener fecha desde la URL o usar fecha actual
             const urlParams = new URLSearchParams(window.location.search);
             const fechaFiltro = urlParams.get('fecha') || new Date().toISOString().split('T')[0];
-
             // Horarios disponibles
             const horarios = [
-                "06:00 - 07:00",
-                "07:00 - 08:00", 
-                "08:00 - 09:00",
-                "09:00 - 10:00",
-                "10:00 - 11:00",
-                "11:00 - 12:00",
-                "12:00 - 13:00",
-                "13:00 - 14:00",
-                "14:00 - 15:00",
-                "15:00 - 16:00",
-                "16:00 - 17:00",
-                "17:00 - 18:00"
+                "06:00 - 07:00", "07:00 - 08:00", "08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00", "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00", "17:00 - 18:00"
             ];
-
             let reservasFiltradas = [...reservasActuales];
             if (fechaFiltro) {
                 reservasFiltradas = reservasFiltradas.filter(r => r.fecha === fechaFiltro);
             }
-
             // Generar filas de la tabla
             tabla.innerHTML = horarios.map(horario => {
-                // Buscar reservas para este horario
                 const reservaCancha1 = reservasFiltradas.find(r => r.horario === horario && extraerNumeroCancha(r.cancha) === '1');
                 const reservaCancha2 = reservasFiltradas.find(r => r.horario === horario && extraerNumeroCancha(r.cancha) === '2');
-
-                // Debug: verificar que tenemos IDs
-                if (reservaCancha1) console.log('Reserva Cancha 1:', reservaCancha1.id, reservaCancha1.nombre);
-                if (reservaCancha2) console.log('Reserva Cancha 2:', reservaCancha2.id, reservaCancha2.nombre);
-
                 return `
                     <tr>
                         <td class="celda-hora">${horario.replace(' - ', '-')}</td>
@@ -798,11 +1095,20 @@
                     </tr>
                 `;
             }).join('');
-
             emptyState.style.display = 'none';
+            actualizarDashboard();
         }
 
         async function cargarReservas() {
+            const filtroFecha = document.getElementById("filtro-fecha").value || obtenerFechaPeru();
+            const urlParams = new URLSearchParams(window.location.search);
+            if (filtroFecha) {
+                urlParams.set("fecha", filtroFecha);
+            } else {
+                urlParams.delete("fecha");
+            }
+            const nuevaUrl = window.location.pathname + (urlParams.toString() ? "?" + urlParams.toString() : "");
+            window.history.replaceState({}, "", nuevaUrl);
             try {
                 const response = await fetchAuth(`${API_URL}/admin/reservas`);
                 if (!response || !response.ok) {
@@ -826,6 +1132,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fechaFiltro = urlParams.get('fecha') || obtenerFechaPeru();
+            document.getElementById('filtro-fecha').value = fechaFiltro;
             cargarReservas();
         });
     </script>
