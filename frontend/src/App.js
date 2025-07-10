@@ -8,26 +8,17 @@ import LoginForm from "./components/auth/LoginForm";
 function App() {
   const [reload, setReload] = useState(false);
   const [clienteEditar, setClienteEditar] = useState(null);
-  const [reloadReservas, setReloadReservas] = useState(false);
   const [reservaEditar, setReservaEditar] = useState(null);
   const [autenticado, setAutenticado] = useState(!!localStorage.getItem("token"));
+  const [mensaje, setMensaje] = useState("");
+  const [tipoMensaje, setTipoMensaje] = useState("");
 
-  const handleClienteCreado = () => {
-    setReload(!reload);
-  };
+  const triggerReload = () => setReload(r => !r);
 
-  const handleEdicionFinalizada = () => {
-    setClienteEditar(null);
-    setReload(!reload);
-  };
-
-  const handleReservaGuardada = () => {
-    setReloadReservas(!reloadReservas);
-  };
-
-  const handleEdicionReservaFinalizada = () => {
-    setReservaEditar(null);
-    setReloadReservas(!reloadReservas);
+  const mostrarMensaje = (msg, tipo = "success") => {
+    setMensaje(msg);
+    setTipoMensaje(tipo);
+    setTimeout(() => setMensaje(""), 3000);
   };
 
   const handleLogout = () => {
@@ -43,25 +34,34 @@ function App() {
     <div>
       <button onClick={handleLogout} style={{ float: "right", margin: 10 }}>Cerrar sesión</button>
       <h1>Gestión de Clientes</h1>
+      {mensaje && (
+        <div style={{ color: tipoMensaje === "error" ? "red" : "green", marginBottom: 10 }}>{mensaje}</div>
+      )}
       <ClienteForm
-        onClienteCreado={handleClienteCreado}
+        onClienteCreado={() => { triggerReload(); mostrarMensaje("Cliente agregado correctamente"); }}
         clienteEditar={clienteEditar}
-        onEdicionFinalizada={handleEdicionFinalizada}
+        onEdicionFinalizada={() => { setClienteEditar(null); triggerReload(); mostrarMensaje("Edición finalizada"); }}
+        mostrarMensaje={mostrarMensaje}
       />
       <ClientesList
-        key={reload}
+        reload={reload}
         onEditar={setClienteEditar}
+        onReload={triggerReload}
+        mostrarMensaje={mostrarMensaje}
       />
 
       <h1>Gestión de Reservas</h1>
       <ReservaForm
-        onReservaGuardada={handleReservaGuardada}
+        onReservaGuardada={() => { triggerReload(); mostrarMensaje("Reserva guardada correctamente"); }}
         reservaEditar={reservaEditar}
-        onEdicionFinalizada={handleEdicionReservaFinalizada}
+        onEdicionFinalizada={() => { setReservaEditar(null); triggerReload(); mostrarMensaje("Edición de reserva finalizada"); }}
+        mostrarMensaje={mostrarMensaje}
       />
       <ReservasList
-        key={reloadReservas}
+        reload={reload}
         onEditar={setReservaEditar}
+        onReload={triggerReload}
+        mostrarMensaje={mostrarMensaje}
       />
     </div>
   );

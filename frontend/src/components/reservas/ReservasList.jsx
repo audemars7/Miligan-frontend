@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { getReservas, eliminarReserva } from "../../api/reservas";
 
-export default function ReservasList({ onEditar }) {
+export default function ReservasList({ reload, onEditar, onReload, mostrarMensaje }) {
   const [reservas, setReservas] = useState([]);
-  const [reload, setReload] = useState(false);
 
   useEffect(() => {
     getReservas().then(data => setReservas(Array.isArray(data) ? data : []));
@@ -11,8 +10,9 @@ export default function ReservasList({ onEditar }) {
 
   const handleEliminar = async (id) => {
     if (window.confirm("¿Seguro que deseas eliminar esta reserva?")) {
-      await eliminarReserva(id);
-      setReload(!reload);
+      const res = await eliminarReserva(id);
+      if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("eliminada") ? "success" : "error");
+      if (onReload) onReload();
     }
   };
 

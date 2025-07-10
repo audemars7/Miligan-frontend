@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { getClientes, eliminarCliente } from "../../api/clientes";
 
-export default function ClientesList({ onEditar }) {
+export default function ClientesList({ reload, onEditar, onReload, mostrarMensaje }) {
   const [clientes, setClientes] = useState([]);
-  const [reload, setReload] = useState(false);
 
   useEffect(() => {
     getClientes().then(data => setClientes(Array.isArray(data) ? data : []));
@@ -11,8 +10,9 @@ export default function ClientesList({ onEditar }) {
 
   const handleEliminar = async (id) => {
     if (window.confirm("¿Seguro que deseas eliminar este cliente?")) {
-      await eliminarCliente(id);
-      setReload(!reload);
+      const res = await eliminarCliente(id);
+      if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("eliminado") ? "success" : "error");
+      if (onReload) onReload();
     }
   };
 

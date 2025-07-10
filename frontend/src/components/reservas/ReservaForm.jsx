@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { crearReserva, actualizarReserva } from "../../api/reservas";
 import { getClientes } from "../../api/clientes";
 
-export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicionFinalizada }) {
+export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicionFinalizada, mostrarMensaje }) {
   const [clientes, setClientes] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
@@ -11,6 +11,7 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
   const [fecha, setFecha] = useState("");
   const [editando, setEditando] = useState(false);
   const [mostrarOpciones, setMostrarOpciones] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getClientes().then(setClientes);
@@ -44,9 +45,14 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!clienteSeleccionado) {
-      alert("Selecciona un cliente válido");
+      if (mostrarMensaje) mostrarMensaje("Selecciona un cliente válido", "error");
       return;
     }
+    if (!cancha || !horario || !fecha) {
+      if (mostrarMensaje) mostrarMensaje("Todos los campos son obligatorios", "error");
+      return;
+    }
+    setLoading(true);
     const datos = {
       cliente_id: clienteSeleccionado.id,
       nombre: clienteSeleccionado.nombre,
@@ -54,12 +60,13 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
       horario,
       fecha
     };
-    console.log("DATOS ENVIADOS A BACKEND:", datos);
     if (editando && reservaEditar) {
-      await actualizarReserva(reservaEditar.id, { nombre: clienteSeleccionado.nombre }); // Solo se puede editar el nombre
+      const res = await actualizarReserva(reservaEditar.id, { nombre: clienteSeleccionado.nombre });
+      if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("actualizada") ? "success" : "error");
       if (onEdicionFinalizada) onEdicionFinalizada();
     } else {
-      await crearReserva(datos);
+      const res = await crearReserva(datos);
+      if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("Reserva guardada") ? "success" : "error");
       if (onReservaGuardada) onReservaGuardada();
     }
     setClienteSeleccionado(null);
@@ -68,11 +75,10 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
     setHorario("");
     setFecha("");
     setEditando(false);
+    setLoading(false);
   };
 
   const clientesFiltrados = clientes.filter(c => c.nombre.toLowerCase().includes(busqueda.toLowerCase()));
-
-  // Horarios válidos (6am a 6pm)
   const horarios = Array.from({length: 13}, (_, i) => `${(6 + i).toString().padStart(2, '0')}:00`);
 
   return (
@@ -105,7 +111,7 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
         {horarios.map(h => <option key={h} value={h}>{h}</option>)}
       </select>
       <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} required={!editando} disabled={editando} />
-      <button type="submit">{editando ? "Actualizar Reserva" : "Agregar Reserva"}</button>
+      <button type="submit" disabled={loading}>{editando ? "Actualizar Reserva" : "Agregar Reserva"}</button>
       {editando && <button type="button" onClick={() => { setEditando(false); setClienteSeleccionado(null); setBusqueda(""); setCancha(""); setHorario(""); setFecha(""); if (onEdicionFinalizada) onEdicionFinalizada(); }}>Cancelar</button>}
     </form>
   );
