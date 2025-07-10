@@ -1,20 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { getClientes, eliminarCliente } from "../../api/clientes";
+import React from "react";
+import { useClientesQuery, useEliminarClienteMutation } from "../../api/clientes";
 
-export default function ClientesList({ reload, onEditar, onReload, mostrarMensaje }) {
-  const [clientes, setClientes] = useState([]);
-
-  useEffect(() => {
-    getClientes().then(data => setClientes(Array.isArray(data) ? data : []));
-  }, [reload]);
+export default function ClientesList({ onEditar, mostrarMensaje }) {
+  const { data: clientes = [], isLoading, isError } = useClientesQuery();
+  const eliminarClienteMutation = useEliminarClienteMutation();
 
   const handleEliminar = async (id) => {
     if (window.confirm("¿Seguro que deseas eliminar este cliente?")) {
-      const res = await eliminarCliente(id);
-      if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("eliminado") ? "success" : "error");
-      if (onReload) onReload();
+      eliminarClienteMutation.mutate(id, {
+        onSuccess: (res) => {
+          if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("eliminado") ? "success" : "error");
+        }
+      });
     }
   };
+
+  if (isLoading) return <div>Cargando clientes...</div>;
+  if (isError) return <div style={{ color: "red" }}>Error al cargar clientes</div>;
 
   return (
     <div>

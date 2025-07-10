@@ -1,15 +1,16 @@
-import React, { useState } from "react";
-import { crearCliente, actualizarCliente } from "../../api/clientes";
+import React, { useState, useEffect } from "react";
+import { useCrearClienteMutation, useActualizarClienteMutation } from "../../api/clientes";
 
-export default function ClienteForm({ onClienteCreado, clienteEditar, onEdicionFinalizada, mostrarMensaje }) {
+export default function ClienteForm({ clienteEditar, onEdicionFinalizada, mostrarMensaje }) {
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
   const [editando, setEditando] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  // Cargar datos al editar
-  React.useEffect(() => {
+  const crearClienteMutation = useCrearClienteMutation();
+  const actualizarClienteMutation = useActualizarClienteMutation();
+
+  useEffect(() => {
     if (clienteEditar) {
       setNombre(clienteEditar.nombre || "");
       setTelefono(clienteEditar.telefono || "");
@@ -29,26 +30,37 @@ export default function ClienteForm({ onClienteCreado, clienteEditar, onEdicionF
       if (mostrarMensaje) mostrarMensaje("El nombre es obligatorio", "error");
       return;
     }
-    setLoading(true);
     if (editando && clienteEditar) {
-      const res = await actualizarCliente(clienteEditar.id, { nombre, telefono, email });
-      if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("actualizado") ? "success" : "error");
-      if (onEdicionFinalizada) onEdicionFinalizada();
+      actualizarClienteMutation.mutate(
+        { id: clienteEditar.id, data: { nombre, telefono, email } },
+        {
+          onSuccess: (res) => {
+            if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("actualizado") ? "success" : "error");
+            if (onEdicionFinalizada) onEdicionFinalizada();
+          }
+        }
+      );
     } else {
-      const nuevo = await crearCliente({ nombre, telefono, email });
-      if (nuevo.id && onClienteCreado) {
-        onClienteCreado(); // Solo recarga si realmente se creó
-        if (mostrarMensaje) mostrarMensaje("Cliente creado correctamente", "success");
-      } else if (mostrarMensaje) {
-        mostrarMensaje(nuevo.mensaje || "Error al crear cliente", "error");
-      }
+      crearClienteMutation.mutate(
+        { nombre, telefono, email },
+        {
+          onSuccess: (nuevo) => {
+            if (nuevo.id) {
+              if (mostrarMensaje) mostrarMensaje("Cliente creado correctamente", "success");
+            } else if (mostrarMensaje) {
+              mostrarMensaje(nuevo.mensaje || "Error al crear cliente", "error");
+            }
+            setNombre("");
+            setTelefono("");
+            setEmail("");
+            setEditando(false);
+          }
+        }
+      );
     }
-    setNombre("");
-    setTelefono("");
-    setEmail("");
-    setEditando(false);
-    setLoading(false);
   };
+
+  const loading = crearClienteMutation.isLoading || actualizarClienteMutation.isLoading;
 
   return (
     <form onSubmit={handleSubmit}>
