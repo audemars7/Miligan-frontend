@@ -36,10 +36,12 @@ export default function ClienteForm({ onClienteCreado, clienteEditar, onEdicionF
       if (onEdicionFinalizada) onEdicionFinalizada();
     } else {
       const nuevo = await crearCliente({ nombre, telefono, email });
-      if (nuevo.id) {
-        if (onClienteCreado) onClienteCreado();
+      if (nuevo.id && onClienteCreado) {
+        onClienteCreado(); // Solo recarga si realmente se creó
+        if (mostrarMensaje) mostrarMensaje("Cliente creado correctamente", "success");
+      } else if (mostrarMensaje) {
+        mostrarMensaje(nuevo.mensaje || "Error al crear cliente", "error");
       }
-      if (nuevo.mensaje && mostrarMensaje) mostrarMensaje(nuevo.mensaje, nuevo.id ? "success" : "error");
     }
     setNombre("");
     setTelefono("");
