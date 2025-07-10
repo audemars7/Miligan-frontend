@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { crearReserva, actualizarReserva } from "../../api/reservas";
-import { getClientes } from "../../api/clientes";
+import { useClientesQuery } from "../../api/clientes";
 
 export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicionFinalizada, mostrarMensaje }) {
-  const [clientes, setClientes] = useState([]);
+  const { data: clientes = [] } = useClientesQuery();
   const [busqueda, setBusqueda] = useState("");
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [cancha, setCancha] = useState("");
@@ -14,7 +14,7 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    getClientes().then(setClientes);
+    // No es necesario setear clientes, ya viene de React Query
   }, []);
 
   useEffect(() => {
