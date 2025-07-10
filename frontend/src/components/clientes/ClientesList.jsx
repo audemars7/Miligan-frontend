@@ -6,7 +6,7 @@ export default function ClientesList({ onEditar }) {
   const [reload, setReload] = useState(false);
 
   useEffect(() => {
-    getClientes().then(setClientes);
+    getClientes().then(data => setClientes(Array.isArray(data) ? data : []));
   }, [reload]);
 
   const handleEliminar = async (id) => {
@@ -20,7 +20,7 @@ export default function ClientesList({ onEditar }) {
     <div>
       <h2>Clientes</h2>
       <ul>
-        {clientes.map(cliente => (
+        {(clientes || []).map(cliente => (
           <li key={cliente.id}>
             {cliente.nombre} - {cliente.telefono || "Sin teléfono"}
             <button onClick={() => onEditar(cliente)} style={{marginLeft: 8}}>Editar</button>

@@ -6,7 +6,7 @@ export default function ReservasList({ onEditar }) {
   const [reload, setReload] = useState(false);
 
   useEffect(() => {
-    getReservas().then(setReservas);
+    getReservas().then(data => setReservas(Array.isArray(data) ? data : []));
   }, [reload]);
 
   const handleEliminar = async (id) => {
@@ -20,7 +20,7 @@ export default function ReservasList({ onEditar }) {
     <div>
       <h2>Reservas</h2>
       <ul>
-        {reservas.map(reserva => (
+        {(reservas || []).map(reserva => (
           <li key={reserva.id}>
             {reserva.nombre} - {reserva.cancha} - {reserva.horario} - {reserva.fecha}
             <button onClick={() => onEditar(reserva)} style={{marginLeft: 8}}>Editar</button>
