@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { getReservas, eliminarReserva } from "../../api/reservas";
 
-export default function ReservasList({ reload, onEditar, onReload, mostrarMensaje }) {
+export default function ReservasList(
+  
+  { reload, onEditar, onReload, mostrarMensaje }) {
   const [reservas, setReservas] = useState([]);
 
   useEffect(() => {

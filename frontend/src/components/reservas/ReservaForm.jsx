@@ -95,7 +95,7 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
           <ul style={{position: 'absolute', zIndex: 10, background: 'white', border: '1px solid #ccc', width: '100%', maxHeight: 120, overflowY: 'auto', listStyle: 'none', margin: 0, padding: 0}}>
             {clientesFiltrados.map(cliente => (
               <li key={cliente.id} style={{padding: 4, cursor: 'pointer'}} onClick={() => handleSelectCliente(cliente)}>
-                {cliente.nombre} {cliente.telefono ? `- ${cliente.telefono}` : ''}
+                {cliente.nombre} {cliente.apellido}
               </li>
             ))}
           </ul>

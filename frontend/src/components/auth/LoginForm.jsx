@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { API_URL } from "../../config";
 
 export default function LoginForm({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -11,7 +12,8 @@ export default function LoginForm({ onLogin }) {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL || "https://tennismiligan.onrender.com"}/login`, {
+      console.log("Intentando conectar a:", `${API_URL}/login`);
+      const res = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -24,6 +26,7 @@ export default function LoginForm({ onLogin }) {
         setError(data.mensaje || "Credenciales incorrectas");
       }
     } catch (err) {
+      console.error("Error detallado:", err);
       setError("Error de conexión con el servidor");
     }
     setLoading(false);

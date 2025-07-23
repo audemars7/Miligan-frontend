@@ -16,7 +16,4 @@ const environment = process.env.NODE_ENV || "development";
 // Exportar la configuración del entorno actual
 export const API_URL = config[environment].API_URL;
 
-// Token JWT (en producción deberías obtenerlo dinámicamente)
-export const JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluMSIsImV4cCI6MTc1MTgzNzA5MH0.ODqiXsemKZqW0XWyAD5-ar-Tgz6KBbLH1GujL-T0occ";
-
 export default config; 

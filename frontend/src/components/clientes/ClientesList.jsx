@@ -24,7 +24,7 @@ export default function ClientesList({ onEditar, mostrarMensaje }) {
       <ul>
         {(clientes || []).map(cliente => (
           <li key={cliente.id}>
-            {cliente.nombre} - {cliente.telefono || "Sin teléfono"}
+            {cliente.nombre} {cliente.apellido} - {cliente.telefono || "Sin teléfono"}
             <button onClick={() => onEditar(cliente)} style={{marginLeft: 8}}>Editar</button>
             <button onClick={() => handleEliminar(cliente.id)} style={{marginLeft: 8, color: 'red'}}>Eliminar</button>
           </li>
