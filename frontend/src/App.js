@@ -1,69 +1,65 @@
 import React, { useState } from "react";
-import ClientesList from "./components/clientes/ClientesList";
-import ClienteForm from "./components/clientes/ClienteForm";
-import ReservasList from "./components/reservas/ReservasList";
-import ReservaForm from "./components/reservas/ReservaForm";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Navigation from "./components/layout/Navigation";
+import Dashboard from "./pages/Dashboard";
+import ClientesPage from "./pages/ClientesPage";
+import ReservasPage from "./pages/ReservasPage";
 import LoginForm from "./components/auth/LoginForm";
 
+// Crear instancia de QueryClient
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
 function App() {
-  const [reload, setReload] = useState(false);
-  const [clienteEditar, setClienteEditar] = useState(null);
-  const [reservaEditar, setReservaEditar] = useState(null);
   const [autenticado, setAutenticado] = useState(!!localStorage.getItem("token"));
-  const [mensaje, setMensaje] = useState("");
-  const [tipoMensaje, setTipoMensaje] = useState("");
-
-  const triggerReload = () => setReload(r => !r);
-
-  const mostrarMensaje = (msg, tipo = "success") => {
-    setMensaje(msg);
-    setTipoMensaje(tipo);
-    setTimeout(() => setMensaje(""), 3000);
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     setAutenticado(false);
   };
 
+  const handleLogin = () => {
+    setAutenticado(true);
+  };
+
+  // Estilos globales para la aplicación
+  const appStyle = {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+  };
+
   if (!autenticado) {
-    return <LoginForm onLogin={() => setAutenticado(true)} />;
+    return (
+      <QueryClientProvider client={queryClient}>
+        <div style={appStyle}>
+          <LoginForm onLogin={handleLogin} />
+        </div>
+      </QueryClientProvider>
+    );
   }
 
   return (
-    <div>
-      <button onClick={handleLogout} style={{ float: "right", margin: 10 }}>Cerrar sesión</button>
-      <h1>Gestión de Clientes</h1>
-      {mensaje && (
-        <div style={{ color: tipoMensaje === "error" ? "red" : "green", marginBottom: 10 }}>{mensaje}</div>
-      )}
-      <ClienteForm
-        onClienteCreado={() => { triggerReload(); mostrarMensaje("Cliente agregado correctamente"); }}
-        clienteEditar={clienteEditar}
-        onEdicionFinalizada={() => { setClienteEditar(null); triggerReload(); mostrarMensaje("Edición finalizada"); }}
-        mostrarMensaje={mostrarMensaje}
-      />
-      <ClientesList
-        reload={reload}
-        onEditar={setClienteEditar}
-        onReload={triggerReload}
-        mostrarMensaje={mostrarMensaje}
-      />
-
-      <h1>Gestión de Reservas</h1>
-      <ReservaForm
-        onReservaGuardada={() => { triggerReload(); mostrarMensaje("Reserva guardada correctamente"); }}
-        reservaEditar={reservaEditar}
-        onEdicionFinalizada={() => { setReservaEditar(null); triggerReload(); mostrarMensaje("Edición de reserva finalizada"); }}
-        mostrarMensaje={mostrarMensaje}
-      />
-      <ReservasList
-        reload={reload}
-        onEditar={setReservaEditar}
-        onReload={triggerReload}
-        mostrarMensaje={mostrarMensaje}
-      />
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <div style={appStyle}>
+          <Navigation onLogout={handleLogout} />
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/clientes" element={<ClientesPage />} />
+            <Route path="/reservas" element={<ReservasPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </Router>
+    </QueryClientProvider>
   );
 }
 
