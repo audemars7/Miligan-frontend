@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { getReservas, eliminarReserva } from "../../api/reservas";
+import React from "react";
+import { useReservasQuery, useEliminarReservaMutation } from "../../api/reservas";
 
-export default function ReservasList(
-  
-  { reload, onEditar, onReload, mostrarMensaje }) {
-  const [reservas, setReservas] = useState([]);
-
-  useEffect(() => {
-    getReservas().then(data => setReservas(Array.isArray(data) ? data : []));
-  }, [reload]);
+export default function ReservasList({ onEditar, mostrarMensaje }) {
+  const { data: reservas = [], isLoading, isError } = useReservasQuery();
+  const eliminarReservaMutation = useEliminarReservaMutation();
 
   const handleEliminar = async (id) => {
     if (window.confirm("¿Seguro que deseas eliminar esta reserva?")) {
-      const res = await eliminarReserva(id);
-      if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("eliminada") ? "success" : "error");
-      if (onReload) onReload();
+      eliminarReservaMutation.mutate(id, {
+        onSuccess: (res) => {
+          if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("eliminada") ? "success" : "error");
+        }
+      });
     }
   };
+
+  if (isLoading) return <div>Cargando reservas...</div>;
+  if (isError) return <div style={{ color: "red" }}>Error al cargar reservas</div>;
 
   return (
     <div>

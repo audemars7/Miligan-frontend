@@ -64,7 +64,7 @@ export default function ClienteForm({ clienteEditar, onEdicionFinalizada, mostra
     }
   };
 
-  const loading = crearClienteMutation.isLoading || actualizarClienteMutation.isLoading;
+  const loading = crearClienteMutation.isPending || actualizarClienteMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit}>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { crearReserva, actualizarReserva } from "../../api/reservas";
+import { useCrearReservaMutation, useActualizarReservaMutation } from "../../api/reservas";
 import { useClientesQuery } from "../../api/clientes";
 
 export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicionFinalizada, mostrarMensaje }) {
@@ -11,11 +11,9 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
   const [fecha, setFecha] = useState("");
   const [editando, setEditando] = useState(false);
   const [mostrarOpciones, setMostrarOpciones] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // No es necesario setear clientes, ya viene de React Query
-  }, []);
+  const crearReservaMutation = useCrearReservaMutation();
+  const actualizarReservaMutation = useActualizarReservaMutation();
 
   useEffect(() => {
     if (reservaEditar) {
@@ -52,7 +50,7 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
       if (mostrarMensaje) mostrarMensaje("Todos los campos son obligatorios", "error");
       return;
     }
-    setLoading(true);
+
     const datos = {
       cliente_id: clienteSeleccionado.id,
       nombre: clienteSeleccionado.nombre,
@@ -60,26 +58,37 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
       horario,
       fecha
     };
+
     if (editando && reservaEditar) {
-      const res = await actualizarReserva(reservaEditar.id, { nombre: clienteSeleccionado.nombre });
-      if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("actualizada") ? "success" : "error");
-      if (onEdicionFinalizada) onEdicionFinalizada();
+      actualizarReservaMutation.mutate(
+        { id: reservaEditar.id, data: { nombre: clienteSeleccionado.nombre } },
+        {
+          onSuccess: (res) => {
+            if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("actualizada") ? "success" : "error");
+            if (onEdicionFinalizada) onEdicionFinalizada();
+          }
+        }
+      );
     } else {
-      const res = await crearReserva(datos);
-      if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("Reserva guardada") ? "success" : "error");
-      if (onReservaGuardada) onReservaGuardada();
+      crearReservaMutation.mutate(datos, {
+        onSuccess: (res) => {
+          if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("Reserva guardada") ? "success" : "error");
+          if (onReservaGuardada) onReservaGuardada();
+          // Limpiar formulario
+          setClienteSeleccionado(null);
+          setBusqueda("");
+          setCancha("");
+          setHorario("");
+          setFecha("");
+          setEditando(false);
+        }
+      });
     }
-    setClienteSeleccionado(null);
-    setBusqueda("");
-    setCancha("");
-    setHorario("");
-    setFecha("");
-    setEditando(false);
-    setLoading(false);
   };
 
   const clientesFiltrados = clientes.filter(c => c.nombre.toLowerCase().includes(busqueda.toLowerCase()));
   const horarios = Array.from({length: 13}, (_, i) => `${(6 + i).toString().padStart(2, '0')}:00`);
+  const loading = crearReservaMutation.isPending || actualizarReservaMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit} autoComplete="off">

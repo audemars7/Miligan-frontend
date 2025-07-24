@@ -1,4 +1,5 @@
 import { API_URL } from '../config';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export async function getReservas() {
   const token = localStorage.getItem("token");
@@ -14,6 +15,13 @@ export async function getReservas() {
   } catch {
     return [];
   }
+}
+
+export function useReservasQuery() {
+  return useQuery({
+    queryKey: ['reservas'],
+    queryFn: getReservas
+  });
 }
 
 export async function crearReserva(data) {
@@ -34,6 +42,16 @@ export async function crearReserva(data) {
   }
 }
 
+export function useCrearReservaMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: crearReserva,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['reservas']);
+    }
+  });
+}
+
 export async function actualizarReserva(id, data) {
   const token = localStorage.getItem("token");
   if (!token) return { mensaje: "No autenticado" };
@@ -52,6 +70,16 @@ export async function actualizarReserva(id, data) {
   }
 }
 
+export function useActualizarReservaMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => actualizarReserva(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['reservas']);
+    }
+  });
+}
+
 export async function eliminarReserva(id) {
   const token = localStorage.getItem("token");
   if (!token) return { mensaje: "No autenticado" };
@@ -66,4 +94,14 @@ export async function eliminarReserva(id) {
   } catch {
     return { mensaje: "Error de red" };
   }
+}
+
+export function useEliminarReservaMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: eliminarReserva,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['reservas']);
+    }
+  });
 } 

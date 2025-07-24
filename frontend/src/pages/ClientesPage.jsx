@@ -3,12 +3,9 @@ import ClienteForm from '../components/clientes/ClienteForm';
 import ClientesList from '../components/clientes/ClientesList';
 
 export default function ClientesPage() {
-  const [reload, setReload] = useState(false);
   const [clienteEditar, setClienteEditar] = useState(null);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("");
-
-  const triggerReload = () => setReload(r => !r);
 
   const mostrarMensaje = (msg, tipo = "success") => {
     setMensaje(msg);
@@ -71,14 +68,9 @@ export default function ClientesPage() {
           {clienteEditar ? "✏️ Editar Cliente" : "➕ Agregar Nuevo Cliente"}
         </h2>
         <ClienteForm
-          onClienteCreado={() => {
-            triggerReload();
-            mostrarMensaje("Cliente agregado correctamente");
-          }}
           clienteEditar={clienteEditar}
           onEdicionFinalizada={() => {
             setClienteEditar(null);
-            triggerReload();
             mostrarMensaje("Cliente actualizado correctamente");
           }}
           mostrarMensaje={mostrarMensaje}
@@ -88,9 +80,7 @@ export default function ClientesPage() {
       <div style={sectionStyle}>
         <h2 style={sectionTitleStyle}>📋 Lista de Clientes</h2>
         <ClientesList
-          reload={reload}
           onEditar={setClienteEditar}
-          onReload={triggerReload}
           mostrarMensaje={mostrarMensaje}
         />
       </div>

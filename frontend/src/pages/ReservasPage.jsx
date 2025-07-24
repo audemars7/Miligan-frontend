@@ -3,12 +3,9 @@ import ReservaForm from '../components/reservas/ReservaForm';
 import ReservasList from '../components/reservas/ReservasList';
 
 export default function ReservasPage() {
-  const [reload, setReload] = useState(false);
   const [reservaEditar, setReservaEditar] = useState(null);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("");
-
-  const triggerReload = () => setReload(r => !r);
 
   const mostrarMensaje = (msg, tipo = "success") => {
     setMensaje(msg);
@@ -72,13 +69,11 @@ export default function ReservasPage() {
         </h2>
         <ReservaForm
           onReservaGuardada={() => {
-            triggerReload();
             mostrarMensaje("Reserva guardada correctamente");
           }}
           reservaEditar={reservaEditar}
           onEdicionFinalizada={() => {
             setReservaEditar(null);
-            triggerReload();
             mostrarMensaje("Reserva actualizada correctamente");
           }}
           mostrarMensaje={mostrarMensaje}
@@ -88,9 +83,7 @@ export default function ReservasPage() {
       <div style={sectionStyle}>
         <h2 style={sectionTitleStyle}>📋 Lista de Reservas</h2>
         <ReservasList
-          reload={reload}
           onEditar={setReservaEditar}
-          onReload={triggerReload}
           mostrarMensaje={mostrarMensaje}
         />
       </div>
