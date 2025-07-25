@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useCrearClienteMutation, useActualizarClienteMutation } from "../../api/clientes";
+import { API_URL } from "../../config";
 
 export default function ClienteForm({ clienteEditar, onEdicionFinalizada, mostrarMensaje }) {
   const [nombre, setNombre] = useState("");
@@ -7,9 +7,7 @@ export default function ClienteForm({ clienteEditar, onEdicionFinalizada, mostra
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
   const [editando, setEditando] = useState(false);
-
-  const crearClienteMutation = useCrearClienteMutation();
-  const actualizarClienteMutation = useActualizarClienteMutation();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (clienteEditar) {
@@ -33,38 +31,49 @@ export default function ClienteForm({ clienteEditar, onEdicionFinalizada, mostra
       if (mostrarMensaje) mostrarMensaje("El nombre es obligatorio", "error");
       return;
     }
-    if (editando && clienteEditar) {
-      actualizarClienteMutation.mutate(
-        { id: clienteEditar.id, data: { nombre, apellido, telefono, email } },
-        {
-          onSuccess: (res) => {
-            if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("actualizado") ? "success" : "error");
-            if (onEdicionFinalizada) onEdicionFinalizada();
-          }
+    
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    
+    try {
+      if (editando && clienteEditar) {
+        const res = await fetch(`${API_URL}/clientes/${clienteEditar.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ nombre, apellido, telefono, email })
+        });
+        const data = await res.json();
+        if (mostrarMensaje) mostrarMensaje(data.mensaje || "Cliente actualizado", "success");
+        if (onEdicionFinalizada) onEdicionFinalizada();
+      } else {
+        const res = await fetch(`${API_URL}/clientes`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ nombre, apellido, telefono, email })
+        });
+        const data = await res.json();
+        if (data.id) {
+          if (mostrarMensaje) mostrarMensaje("Cliente creado correctamente", "success");
+          setNombre("");
+          setApellido("");
+          setTelefono("");
+          setEmail("");
+        } else {
+          if (mostrarMensaje) mostrarMensaje(data.mensaje || "Error al crear cliente", "error");
         }
-      );
-    } else {
-      crearClienteMutation.mutate(
-        { nombre, apellido, telefono, email },
-        {
-          onSuccess: (nuevo) => {
-            if (nuevo.id) {
-              if (mostrarMensaje) mostrarMensaje("Cliente creado correctamente", "success");
-            } else if (mostrarMensaje) {
-              mostrarMensaje(nuevo.mensaje || "Error al crear cliente", "error");
-            }
-            setNombre("");
-            setApellido("");
-            setTelefono("");
-            setEmail("");
-            setEditando(false);
-          }
-        }
-      );
+      }
+    } catch (error) {
+      if (mostrarMensaje) mostrarMensaje("Error de red", "error");
     }
+    
+    setLoading(false);
   };
-
-  const loading = crearClienteMutation.isPending || actualizarClienteMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -72,8 +81,21 @@ export default function ClienteForm({ clienteEditar, onEdicionFinalizada, mostra
       <input value={apellido} onChange={e => setApellido(e.target.value)} placeholder="Apellido" />
       <input value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="Teléfono" />
       <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
-      <button type="submit" disabled={loading}>{editando ? "Actualizar Cliente" : "Agregar Cliente"}</button>
-      {editando && <button type="button" onClick={() => { setEditando(false); setNombre(""); setApellido(""); setTelefono(""); setEmail(""); if (onEdicionFinalizada) onEdicionFinalizada(); }}>Cancelar</button>}
+      <button type="submit" disabled={loading}>
+        {editando ? "Actualizar Cliente" : "Agregar Cliente"}
+      </button>
+      {editando && (
+        <button type="button" onClick={() => {
+          setEditando(false);
+          setNombre("");
+          setApellido("");
+          setTelefono("");
+          setEmail("");
+          if (onEdicionFinalizada) onEdicionFinalizada();
+        }}>
+          Cancelar
+        </button>
+      )}
     </form>
   );
 } 

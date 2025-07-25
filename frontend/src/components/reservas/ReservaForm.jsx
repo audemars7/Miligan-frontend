@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useCrearReservaMutation, useActualizarReservaMutation } from "../../api/reservas";
-import { useClientesQuery } from "../../api/clientes";
+import { API_URL } from "../../config";
 
 export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicionFinalizada, mostrarMensaje }) {
-  const { data: clientes = [] } = useClientesQuery();
+  const [clientes, setClientes] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [cancha, setCancha] = useState("");
@@ -11,9 +10,25 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
   const [fecha, setFecha] = useState("");
   const [editando, setEditando] = useState(false);
   const [mostrarOpciones, setMostrarOpciones] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const crearReservaMutation = useCrearReservaMutation();
-  const actualizarReservaMutation = useActualizarReservaMutation();
+  useEffect(() => {
+    const fetchClientes = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await fetch(`${API_URL}/clientes`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setClientes(data);
+        }
+      } catch (error) {
+        console.error("Error al cargar clientes:", error);
+      }
+    };
+    fetchClientes();
+  }, []);
 
   useEffect(() => {
     if (reservaEditar) {
@@ -31,7 +46,6 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
       setFecha("");
       setEditando(false);
     }
-    // eslint-disable-next-line
   }, [reservaEditar, clientes]);
 
   const handleSelectCliente = (cliente) => {
@@ -50,7 +64,10 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
       if (mostrarMensaje) mostrarMensaje("Todos los campos son obligatorios", "error");
       return;
     }
-
+    
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    
     const datos = {
       cliente_id: clienteSeleccionado.id,
       nombre: clienteSeleccionado.nombre,
@@ -59,36 +76,47 @@ export default function ReservaForm({ onReservaGuardada, reservaEditar, onEdicio
       fecha
     };
 
-    if (editando && reservaEditar) {
-      actualizarReservaMutation.mutate(
-        { id: reservaEditar.id, data: { nombre: clienteSeleccionado.nombre } },
-        {
-          onSuccess: (res) => {
-            if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("actualizada") ? "success" : "error");
-            if (onEdicionFinalizada) onEdicionFinalizada();
-          }
-        }
-      );
-    } else {
-      crearReservaMutation.mutate(datos, {
-        onSuccess: (res) => {
-          if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("Reserva guardada") ? "success" : "error");
-          if (onReservaGuardada) onReservaGuardada();
-          // Limpiar formulario
-          setClienteSeleccionado(null);
-          setBusqueda("");
-          setCancha("");
-          setHorario("");
-          setFecha("");
-          setEditando(false);
-        }
-      });
+    try {
+      if (editando && reservaEditar) {
+        const res = await fetch(`${API_URL}/admin/reservas/${reservaEditar.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ nombre: clienteSeleccionado.nombre })
+        });
+        const data = await res.json();
+        if (mostrarMensaje) mostrarMensaje(data.mensaje || "Reserva actualizada", "success");
+        if (onEdicionFinalizada) onEdicionFinalizada();
+      } else {
+        const res = await fetch(`${API_URL}/reservar`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(datos)
+        });
+        const data = await res.json();
+        if (mostrarMensaje) mostrarMensaje(data.mensaje || "Reserva guardada", "success");
+        if (onReservaGuardada) onReservaGuardada();
+        setClienteSeleccionado(null);
+        setBusqueda("");
+        setCancha("");
+        setHorario("");
+        setFecha("");
+        setEditando(false);
+      }
+    } catch (error) {
+      if (mostrarMensaje) mostrarMensaje("Error de red", "error");
     }
+    
+    setLoading(false);
   };
 
   const clientesFiltrados = clientes.filter(c => c.nombre.toLowerCase().includes(busqueda.toLowerCase()));
   const horarios = Array.from({length: 13}, (_, i) => `${(6 + i).toString().padStart(2, '0')}:00`);
-  const loading = crearReservaMutation.isPending || actualizarReservaMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit} autoComplete="off">

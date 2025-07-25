@@ -1,22 +1,44 @@
-import React from "react";
-import { useReservasQuery, useEliminarReservaMutation } from "../../api/reservas";
+import React, { useEffect, useState } from "react";
+import { API_URL } from "../../config";
 
-export default function ReservasList({ onEditar, mostrarMensaje }) {
-  const { data: reservas = [], isLoading, isError } = useReservasQuery();
-  const eliminarReservaMutation = useEliminarReservaMutation();
+export default function ReservasList({ reload, onEditar, onReload, mostrarMensaje }) {
+  const [reservas, setReservas] = useState([]);
+
+  useEffect(() => {
+    const fetchReservas = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await fetch(`${API_URL}/reservas`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setReservas(Array.isArray(data) ? data : []);
+        }
+      } catch (error) {
+        console.error("Error al cargar reservas:", error);
+        setReservas([]);
+      }
+    };
+    fetchReservas();
+  }, [reload]);
 
   const handleEliminar = async (id) => {
     if (window.confirm("¿Seguro que deseas eliminar esta reserva?")) {
-      eliminarReservaMutation.mutate(id, {
-        onSuccess: (res) => {
-          if (res.mensaje && mostrarMensaje) mostrarMensaje(res.mensaje, res.mensaje.includes("eliminada") ? "success" : "error");
-        }
-      });
+      const token = localStorage.getItem("token");
+      try {
+        const res = await fetch(`${API_URL}/admin/reservas/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (mostrarMensaje) mostrarMensaje(data.mensaje || "Reserva eliminada", "success");
+        if (onReload) onReload();
+      } catch (error) {
+        if (mostrarMensaje) mostrarMensaje("Error de red", "error");
+      }
     }
   };
-
-  if (isLoading) return <div>Cargando reservas...</div>;
-  if (isError) return <div style={{ color: "red" }}>Error al cargar reservas</div>;
 
   return (
     <div>

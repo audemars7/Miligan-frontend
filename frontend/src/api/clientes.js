@@ -1,5 +1,4 @@
 import { API_URL } from '../config';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // Fetch clientes
 export async function fetchClientes() {
@@ -14,13 +13,6 @@ export async function fetchClientes() {
   } catch {
     return [];
   }
-}
-
-export function useClientesQuery() {
-  return useQuery({
-    queryKey: ['clientes'],
-    queryFn: fetchClientes
-  });
 }
 
 // Crear cliente
@@ -42,16 +34,6 @@ export async function crearClienteAPI(data) {
   }
 }
 
-export function useCrearClienteMutation() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: crearClienteAPI,
-    onSuccess: () => {
-      queryClient.invalidateQueries(['clientes']);
-    }
-  });
-}
-
 // Actualizar cliente
 export async function actualizarClienteAPI(id, data) {
   const token = localStorage.getItem("token");
@@ -71,16 +53,6 @@ export async function actualizarClienteAPI(id, data) {
   }
 }
 
-export function useActualizarClienteMutation() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }) => actualizarClienteAPI(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['clientes']);
-    }
-  });
-}
-
 // Eliminar cliente
 export async function eliminarClienteAPI(id) {
   const token = localStorage.getItem("token");
@@ -96,14 +68,4 @@ export async function eliminarClienteAPI(id) {
   } catch {
     return { mensaje: "Error de red" };
   }
-}
-
-export function useEliminarClienteMutation() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: eliminarClienteAPI,
-    onSuccess: () => {
-      queryClient.invalidateQueries(['clientes']);
-    }
-  });
 } 
