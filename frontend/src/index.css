@@ -11,7 +11,8 @@ body {
 
 /* === SECCIÓN SUPERIOR CON FONDO DE TENNIS === */
 .tennis-header {
-  background: linear-gradient(135deg, #4a7c59 0%, #3e6b47 100%);
+  background: linear-gradient(135deg, rgba(74, 124, 89, 0.3) 0%, rgba(62, 107, 71, 0.3) 100%), 
+              url('https://images.unsplash.com/photo-1554068865-24cecd4e34b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
