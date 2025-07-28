@@ -67,3 +67,35 @@ export async function eliminarReserva(id) {
     return { mensaje: "Error de red" };
   }
 } 
+
+export async function getHorariosDisponibles(fecha, cancha) {
+  const token = localStorage.getItem("token");
+  if (!token) return { horarios_disponibles: [] };
+  try {
+    const res = await fetch(`${API_URL}/horarios-disponibles?fecha=${fecha}&cancha=${cancha}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    if (!res.ok) return { horarios_disponibles: [] };
+    return await res.json();
+  } catch {
+    return { horarios_disponibles: [] };
+  }
+}
+
+export async function verificarDisponibilidad(fecha, cancha, horario) {
+  const token = localStorage.getItem("token");
+  if (!token) return { disponible: false };
+  try {
+    const res = await fetch(`${API_URL}/verificar-disponibilidad?fecha=${fecha}&cancha=${cancha}&horario=${horario}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    if (!res.ok) return { disponible: false };
+    return await res.json();
+  } catch {
+    return { disponible: false };
+  }
+} 

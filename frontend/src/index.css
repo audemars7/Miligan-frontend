@@ -1,18 +1,48 @@
-/* Reset y estilos globales */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
+  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #4a7c59 0%, #3e6b47 100%);
   min-height: 100vh;
+}
+
+/* === SECCIÓN SUPERIOR CON FONDO DE TENNIS === */
+.tennis-header {
+  background-image: url("C:\Users\erick\OneDrive\Desktop\Miligan-frontend\frontend\public\images\cancha-tennis.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  padding: 2rem;
+  min-height: 60vh;
+}
+
+.tennis-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.3);
+  z-index: 1;
+}
+
+.tennis-header-content {
+  position: relative;
+  z-index: 2;
+}
+
+.academy-title {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #2d5016;
+  text-align: center;
+  margin-bottom: 2rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
 code {
@@ -28,6 +58,45 @@ input, select, button {
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s ease;
+}
+
+/* Estilos compactos para formularios pequeños */
+.compact-form input,
+.compact-form select,
+.compact-form button {
+  padding: 0.5rem;
+  margin: 0.3rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+/* Estilos compactos para listas de reservas */
+.compact-form h2,
+.compact-form h3 {
+  font-size: 1rem;
+  margin: 0.5rem 0;
+}
+
+.compact-form label {
+  font-size: 0.8rem;
+}
+
+.compact-form ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.compact-form li {
+  font-size: 0.8rem;
+  margin: 0.3rem 0;
+  line-height: 1.3;
+}
+
+.compact-form button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
 }
 
 input:focus, select:focus {
@@ -54,6 +123,22 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+/* Botón eliminar específico */
+.btn-eliminar {
+  background: #dc3545 !important;
+  color: white !important;
+  border: none !important;
+  padding: 4px 8px !important;
+  font-size: 0.8rem !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+}
+
+.btn-eliminar:hover {
+  background: #c82333 !important;
+  transform: none !important;
 }
 
 /* Estilos para tablas */

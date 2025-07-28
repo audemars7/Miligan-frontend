@@ -48,12 +48,15 @@ function App() {
         {mostrarClientes ? "Ocultar Clientes" : "Mostrar Clientes"}
       </button>
       {mostrarClientes && (
-        <ClientesList
-          reload={reload}
-          onEditar={setClienteEditar}
-          onReload={triggerReload}
-          mostrarMensaje={mostrarMensaje}
-        />
+        <>
+          <h2>Clientes</h2>
+          <ClientesList
+            reload={reload}
+            onEditar={setClienteEditar}
+            onReload={triggerReload}
+            mostrarMensaje={mostrarMensaje}
+          />
+        </>
       )}
 
       <h1>Gestión de Reservas</h1>

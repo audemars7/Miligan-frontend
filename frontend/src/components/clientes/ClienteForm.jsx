@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { API_URL } from "../../config";
 
-export default function ClienteForm({ clienteEditar, onEdicionFinalizada, mostrarMensaje }) {
+export default function ClienteForm({ clienteEditar, onClienteCreado, onEdicionFinalizada, mostrarMensaje }) {
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -60,6 +60,7 @@ export default function ClienteForm({ clienteEditar, onEdicionFinalizada, mostra
         const data = await res.json();
         if (data.id) {
           if (mostrarMensaje) mostrarMensaje("Cliente creado correctamente", "success");
+          if (onClienteCreado) onClienteCreado();
           setNombre("");
           setApellido("");
           setTelefono("");
