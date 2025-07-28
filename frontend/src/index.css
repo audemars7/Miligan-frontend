@@ -11,7 +11,7 @@ body {
 
 /* === SECCIÓN SUPERIOR CON FONDO DE TENNIS === */
 .tennis-header {
-  background-image: url("C:\Users\erick\OneDrive\Desktop\Miligan-frontend\frontend\public\images\cancha-tennis.jpg");
+  background-image: url("/images/cancha-tennis.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
